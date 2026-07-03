@@ -394,7 +394,7 @@ function AppContent() {
 
             <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px]">
               <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">Current Farm</span>
-              <span className="text-xs sm:text-sm font-mono text-blue-400 truncate">{status?.currentFarm || 'None'}</span>
+              <span className={`text-xs sm:text-sm font-mono truncate ${status?.currentFarm?.includes('Pausado') ? 'text-amber-500' : 'text-blue-400'}`}>{status?.currentFarm || 'None'}</span>
             </div>
 
             <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex items-center justify-between shadow-sm min-h-[70px] col-span-2 gap-4">

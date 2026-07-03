@@ -21,6 +21,7 @@ let botState = {
   inventoryValue: 0,
   gamesOwned: 0,
   gamesWithDrops: 0,
+  isPausedForPlaying: false,
   availableGamesToFarm: [] as { appId: number, drops: number, name: string }[],
   allBadges: [] as { appId: number, name: string, drops: number, text: string }[],
   avatar: '',
@@ -165,6 +166,11 @@ function startCheckTimer() {
   botState.nextCheckTime = Date.now() + interval;
 
   checkTimeoutId = setTimeout(() => {
+    if (botState.isPausedForPlaying) {
+      addLog('[Auto-Check] Ignorado pois o farming está pausado (jogando em outro dispositivo).');
+      startCheckTimer();
+      return;
+    }
     if (botState.isClientLoggedIn && botState.activeAppIds.length > 0) {
       addLog('[Auto-Check] Iniciando reinicialização periódica de jogos (reabrindo jogos para forçar drop de cartas)...');
       // Stop playing the games first
@@ -295,11 +301,16 @@ function checkBadgesAndFarm() {
     
     if (gamesToFarmList.length > 0) {
       addLog(`Encontrados ${gamesToFarmList.length} jogos com cartas (Total de ${totalDrops} drops restantes).`);
-      const appsToFarm = gamesToFarmList.slice(0, 32).map(g => g.appId); // Max 32 games at once
-      addLog(`Iniciando farm nos jogos: ${appsToFarm.join(', ')}...`);
-      client.gamesPlayed(appsToFarm);
-      botState.currentFarm = `${appsToFarm.length} jogos ativos`;
-      botState.activeAppIds = appsToFarm;
+      if (botState.isPausedForPlaying) {
+        addLog(`Farming não iniciado porque você está jogando em outro dispositivo.`);
+        botState.currentFarm = 'Pausado (Jogando outro jogo)';
+      } else {
+        const appsToFarm = gamesToFarmList.slice(0, 32).map(g => g.appId); // Max 32 games at once
+        addLog(`Iniciando farm nos jogos: ${appsToFarm.join(', ')}...`);
+        client.gamesPlayed(appsToFarm);
+        botState.currentFarm = `${appsToFarm.length} jogos ativos`;
+        botState.activeAppIds = appsToFarm;
+      }
     } else {
       addLog('Nenhuma carta restante para dropar neste momento.');
       client.gamesPlayed([]);
@@ -351,6 +362,10 @@ app.post('/api/farm-manual', (req, res) => {
   const { appId } = req.body;
   if (!appId) return res.status(400).json({ error: 'AppID is required' });
   
+  if (botState.isPausedForPlaying) {
+    return res.status(400).json({ error: 'O farming está pausado porque você está jogando em outro dispositivo. Feche o jogo primeiro.' });
+  }
+
   const appIds = appId.split(',').map((id: string) => parseInt(id.trim(), 10)).filter((id: number) => !isNaN(id));
   
   if (appIds.length > 0 && botState.isClientLoggedIn) {
@@ -433,6 +448,21 @@ client.on('loggedOn', (details) => {
   }
   
   addLog('Autenticando sessão web para verificar insígnias...');
+});
+
+client.on('playingState', (blocked, playingApp) => {
+  addLog(`[System] Estado de jogo atualizado: blocked=${blocked}, playingApp=${playingApp}`);
+  if (blocked) {
+    botState.isPausedForPlaying = true;
+    addLog(`[System] O farming foi pausado porque você está jogando em outro dispositivo (AppID: ${playingApp}).`);
+    client.gamesPlayed([]);
+    botState.activeAppIds = [];
+    botState.currentFarm = 'Pausado (Jogando outro jogo)';
+  } else if (botState.isPausedForPlaying) {
+    botState.isPausedForPlaying = false;
+    addLog(`[System] Você parou de jogar no outro dispositivo. Retomando o farming automático...`);
+    checkBadgesAndFarm();
+  }
 });
 
 client.on('webSession', (sessionid, cookies) => {
