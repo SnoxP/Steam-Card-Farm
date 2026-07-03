@@ -31,7 +31,8 @@ let botState = {
   refreshToken: '',
   activeAppIds: [] as number[],
   nextCheckTime: 0,
-  logs: ['[System] Inicializando servidor Steam...']
+  logs: ['[System] Inicializando servidor Steam...'],
+  collectedCardsDetails: [] as { image: string, title: string, minPrice: string }[]
 };
 
 function addLog(msg: string) {
@@ -85,6 +86,8 @@ app.post('/api/login-client', (req, res) => {
     addLog(`Iniciando conexão CM para usuário: ${accountName}...`);
     logOnOptions.accountName = accountName;
     logOnOptions.password = password;
+    logOnOptions.rememberPassword = true;
+    logOnOptions.machineName = 'CardHarvester';
     if (twoFactorCode) {
       logOnOptions.twoFactorCode = twoFactorCode;
       addLog('Usando código Steam Guard fornecido...');
@@ -244,6 +247,50 @@ function checkBadgesAndFarm() {
       const difference = prevTotalDrops - totalDrops;
       botState.cardsDropped += difference;
       addLog(`[Coleta] Sucesso! ${difference} nova(s) carta(s) coletada(s)/dropada(s)!`);
+      
+      // Fetch new cards from inventory
+      if (client.steamID) {
+        community.getUserInventoryContents(client.steamID, 753, 6, true, (err: any, inventory: any) => {
+          if (!err && inventory) {
+            const cards = inventory.filter((item: any) => item.tags && item.tags.some((tag: any) => tag.category === 'item_class' && tag.internal_name === 'item_class_2'));
+            
+            // Sort by id descending
+            cards.sort((a: any, b: any) => {
+               const idA = BigInt(a.assetid || a.id);
+               const idB = BigInt(b.assetid || b.id);
+               return idA < idB ? 1 : -1;
+            });
+            
+            const newCards = cards.slice(0, difference);
+            newCards.forEach((card: any) => {
+              const title = card.name;
+              const image = card.getImageURL ? card.getImageURL() : `https://community.cloudflare.steamstatic.com/economy/image/${card.icon_url}`;
+              const hashName = encodeURIComponent(card.market_hash_name || card.name);
+              
+              // Get price
+              community.request(`https://steamcommunity.com/market/priceoverview/?appid=753&currency=1&market_hash_name=${hashName}`, (errPrice: any, resPrice: any, bodyPrice: any) => {
+                let minPrice = 'N/A';
+                if (!errPrice && resPrice?.statusCode === 200) {
+                  try {
+                    const priceData = JSON.parse(bodyPrice);
+                    if (priceData.lowest_price) minPrice = priceData.lowest_price;
+                  } catch(e) {}
+                }
+                
+                botState.collectedCardsDetails.unshift({
+                  image,
+                  title,
+                  minPrice
+                });
+                
+                if (botState.collectedCardsDetails.length > 50) {
+                  botState.collectedCardsDetails.length = 50;
+                }
+              });
+            });
+          }
+        });
+      }
     }
     
     if (gamesToFarmList.length > 0) {
