@@ -1,3 +1,4 @@
+import { recordUserActivity, recordCardsDropped, loadStats, updateUserStatus } from "./adminStats";
 import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
@@ -45,6 +46,9 @@ function addLog(msg: string) {
 
 // API Routes
 app.get('/api/status', (req, res) => {
+  let isAdmin = false;
+  let isBanned = false;
+  
   if (botState.isClientLoggedIn && client.steamID) {
     try {
       const mySteamID64 = client.steamID.getSteamID64();
@@ -63,12 +67,31 @@ app.get('/api/status', (req, res) => {
         const states = ['Offline', 'Online', 'Busy', 'Away', 'Snooze', 'Looking to Trade', 'Looking to Play', 'Invisible'];
         const stateIndex = cachedPersona.persona_state !== undefined ? cachedPersona.persona_state : 0;
         botState.personaStateString = states[stateIndex] || 'Online';
+        recordUserActivity(mySteamID64.toString(), botState.username, botState.avatar);
+      }
+      
+      const stats = loadStats();
+      const userStats = stats.users[mySteamID64.toString()];
+      if (userStats) {
+        isAdmin = userStats.isAdmin || false;
+        isBanned = userStats.isBanned || false;
+      }
+      
+      // Auto-logout if banned
+      if (isBanned && botState.isClientLoggedIn) {
+        client.logOff();
+        botState.refreshToken = '';
+        botState.isClientLoggedIn = false;
+        botState.currentFarm = 'Banned';
+        botState.activeAppIds = [];
+        botState.avatar = '';
+        addLog('Sessão encerrada (Usuário banido).');
       }
     } catch (e) {
       // Ignore cache retrieval errors
     }
   }
-  res.json(botState);
+  res.json({ ...botState, isAdmin, isBanned });
 });
 
 // Endpoint para login Cliente (Farm real)
@@ -261,6 +284,7 @@ function checkBadgesAndFarm() {
       const difference = prevTotalDrops - totalDrops;
       botState.cardsDropped += difference;
       addLog(`[Coleta] Sucesso! ${difference} nova(s) carta(s) coletada(s)/dropada(s)!`);
+      if (client.steamID) recordCardsDropped(client.steamID.getSteamID64(), difference);
       
       // Fetch new cards from inventory
       if (client.steamID) {
@@ -421,6 +445,26 @@ app.post('/api/steam-guard', (req, res) => {
   } else {
     res.status(400).json({ error: 'Nenhum código Steam Guard pendente' });
   }
+});
+
+app.get('/api/admin/stats', (req, res) => {
+  const stats = loadStats();
+  if (!client.steamID || !stats.users[client.steamID.getSteamID64().toString()]?.isAdmin) {
+    return res.status(403).json({ error: 'Acesso negado. Apenas o administrador pode ver esta página.' });
+  }
+  res.json(stats);
+});
+
+app.post('/api/admin/update-user', (req, res) => {
+  const stats = loadStats();
+  if (!client.steamID || !stats.users[client.steamID.getSteamID64().toString()]?.isAdmin) {
+    return res.status(403).json({ error: 'Acesso negado.' });
+  }
+  const { steamId, isAdmin, isBanned } = req.body;
+  if (!steamId) return res.status(400).json({ error: 'SteamID is required' });
+  
+  updateUserStatus(steamId, { isAdmin, isBanned });
+  res.json({ success: true });
 });
 
 app.post('/api/logout', (req, res) => {

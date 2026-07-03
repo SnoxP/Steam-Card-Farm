@@ -5,6 +5,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { ShieldAlert } from 'lucide-react';
+import AdminPage from './components/AdminPage';
 
 function AppContent() {
   const [accountName, setAccountName] = useState('');
@@ -769,10 +771,16 @@ function AppContent() {
       </main>
       
       <footer className="bg-[#0d1117] border-t border-[#30363d] px-2 sm:px-4 py-2 flex flex-col sm:flex-row justify-between items-center text-[9px] sm:text-[11px] text-[#8b949e] font-mono shrink-0 gap-1 sm:gap-0">
-        <div className="text-center sm:text-left">CONNECTED TO STEAM CLUSTER: <span className="text-green-500 uppercase">CM04-LON1</span></div>
+        <div className="flex items-center gap-2 text-center sm:text-left">
+          {status?.isAdmin && (
+            <Link to="/admin" className="hover:text-white transition-colors" title="Admin Dashboard">
+              <ShieldAlert size={14} className="inline mr-1" />
+              ADMIN
+            </Link>
+          )}
+        </div>
         <div className="flex gap-3 sm:gap-4">
-          <span>SERVER: Node.js</span>
-          <span className="hidden sm:inline">v5.4.1</span>
+          <span className="hidden sm:inline">v1.0.0</span>
         </div>
       </footer>
     </div>
@@ -783,6 +791,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<AppContent />} />
       </Routes>
     </BrowserRouter>
