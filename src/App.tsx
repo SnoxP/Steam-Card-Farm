@@ -17,6 +17,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'console' | 'available' | 'all'>('console');
   
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  
   const consoleRef = useRef<HTMLDivElement>(null);
 
   const fetchStatus = async () => {
@@ -27,6 +29,27 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
+  };
+
+  useEffect(() => {
+    if (status?.nextCheckTime && status?.isClientLoggedIn && status?.activeAppIds?.length > 0) {
+      const updateTimer = () => {
+        const remaining = Math.max(0, Math.floor((status.nextCheckTime - Date.now()) / 1000));
+        setTimeLeft(remaining);
+      };
+      
+      updateTimer();
+      const interval = setInterval(updateTimer, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setTimeLeft(null);
+    }
+  }, [status?.nextCheckTime, status?.isClientLoggedIn, status?.activeAppIds]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   useEffect(() => {
@@ -212,16 +235,30 @@ export default function App() {
         </aside>
         
         <section className="flex-1 flex flex-col p-2 sm:p-4 gap-2 sm:gap-4 overflow-y-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 shrink-0">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 shrink-0">
             <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px]">
               <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">Games Owned</span>
               <span className="text-lg sm:text-2xl font-mono text-white">{status?.gamesOwned || 0}</span>
             </div>
+
+            <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px]">
+              <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">Cartas Restantes</span>
+              <span className="text-lg sm:text-2xl font-mono text-amber-400">
+                {status?.availableGamesToFarm?.reduce((acc: number, g: any) => acc + (g.drops || 0), 0) || 0}
+              </span>
+            </div>
+
+            <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px]">
+              <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">Cartas Coletadas</span>
+              <span className="text-lg sm:text-2xl font-mono text-green-400">{status?.cardsDropped || 0}</span>
+            </div>
+
             <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px]">
               <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">Current Farm</span>
-              <span className="text-sm sm:text-lg font-mono text-blue-400 truncate">{status?.currentFarm || 'None'}</span>
+              <span className="text-xs sm:text-sm font-mono text-blue-400 truncate">{status?.currentFarm || 'None'}</span>
             </div>
-            <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex items-center justify-between shadow-sm min-h-[70px] lg:col-span-2 gap-4">
+
+            <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex items-center justify-between shadow-sm min-h-[70px] col-span-2 gap-4">
               <div className="flex items-center gap-3 min-w-0">
                 {status?.avatar ? (
                   <div className="relative shrink-0">
@@ -251,8 +288,14 @@ export default function App() {
           <div className="flex-none md:flex-1 grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4 min-h-0">
             <div className="lg:col-span-2 flex flex-col gap-2 sm:gap-4 h-[350px] md:h-auto min-h-0">
               <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col shrink-0">
-                <div className="px-4 py-2 border-b border-[#30363d]">
+                <div className="px-4 py-2 border-b border-[#30363d] flex justify-between items-center">
                   <h2 className="text-xs font-bold uppercase text-[#f0f6fc]">Active Farming Sessions</h2>
+                  {status?.isClientLoggedIn && status?.activeAppIds && status.activeAppIds.length > 0 && timeLeft !== null && (
+                    <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20 flex items-center gap-1.5 font-bold uppercase">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                      Próxima verificação: {formatTime(timeLeft)}
+                    </span>
+                  )}
                 </div>
                 <div className="p-4 flex gap-3 overflow-x-auto">
                   {status?.activeAppIds && status.activeAppIds.length > 0 ? (

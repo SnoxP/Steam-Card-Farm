@@ -30,6 +30,7 @@ let botState = {
   steamGuardDomain: '',
   refreshToken: '',
   activeAppIds: [] as number[],
+  nextCheckTime: 0,
   logs: ['[System] Inicializando servidor Steam...']
 };
 
@@ -149,11 +150,45 @@ function parseDropsCount(text: string): number {
   return 0;
 }
 
+let checkTimeoutId: NodeJS.Timeout | null = null;
+
+function startCheckTimer() {
+  if (checkTimeoutId) {
+    clearTimeout(checkTimeoutId);
+  }
+
+  // Set the next check time to 15 minutes from now
+  const interval = 15 * 60 * 1000;
+  botState.nextCheckTime = Date.now() + interval;
+
+  checkTimeoutId = setTimeout(() => {
+    if (botState.isClientLoggedIn && botState.activeAppIds.length > 0) {
+      addLog('[Auto-Check] Iniciando reinicialização periódica de jogos (reabrindo jogos para forçar drop de cartas)...');
+      // Stop playing the games first
+      client.gamesPlayed([]);
+      
+      // Wait 3 seconds to let Steam register the session close
+      setTimeout(() => {
+        if (botState.isClientLoggedIn) {
+          addLog('[Auto-Check] Reabrindo jogos e verificando insígnias...');
+          checkBadgesAndFarm();
+        } else {
+          startCheckTimer();
+        }
+      }, 3000);
+    } else {
+      startCheckTimer();
+    }
+  }, interval);
+}
+
 function checkBadgesAndFarm() {
   addLog('Carregando página de insígnias...');
   community.request('https://steamcommunity.com/my/badges/', (err, response, body) => {
     if (err || response.statusCode !== 200) {
       addLog(`[Erro Insígnias] Falha ao ler página de insígnias. Status: ${response?.statusCode}`);
+      // Reschedule so the loop doesn't break
+      startCheckTimer();
       return;
     }
     
@@ -193,9 +228,23 @@ function checkBadgesAndFarm() {
       }
     });
     
+    // Calculate difference in remaining card drops to increment cardsDropped counter
+    let prevTotalDrops = 0;
+    if (botState.allBadges && botState.allBadges.length > 0) {
+      botState.allBadges.forEach(b => {
+        prevTotalDrops += (b.drops || 0);
+      });
+    }
+
     botState.allBadges = allBadgesList;
     botState.gamesWithDrops = gamesToFarmList.length;
     botState.availableGamesToFarm = gamesToFarmList;
+    
+    if (prevTotalDrops > 0 && totalDrops < prevTotalDrops) {
+      const difference = prevTotalDrops - totalDrops;
+      botState.cardsDropped += difference;
+      addLog(`[Coleta] Sucesso! ${difference} nova(s) carta(s) coletada(s)/dropada(s)!`);
+    }
     
     if (gamesToFarmList.length > 0) {
       addLog(`Encontrados ${gamesToFarmList.length} jogos com cartas (Total de ${totalDrops} drops restantes).`);
@@ -210,6 +259,9 @@ function checkBadgesAndFarm() {
       botState.currentFarm = 'None';
       botState.activeAppIds = [];
     }
+
+    // Always reset/start the check timer when we successfully parse badges
+    startCheckTimer();
   });
 }
 
@@ -376,13 +428,7 @@ client.on('newItems', (count) => {
   }
 });
 
-// Periodically check badges every 15 minutes if active farming sessions are running
-setInterval(() => {
-  if (botState.isClientLoggedIn && botState.activeAppIds.length > 0) {
-    addLog('[Auto-Check] Verificação periódica de insígnias iniciada para atualizar cartas restantes.');
-    checkBadgesAndFarm();
-  }
-}, 15 * 60 * 1000);
+// Automatic checks are handled dynamically by startCheckTimer()
 
 client.on('error', (err) => {
   botState.isClientLoggedIn = false;
