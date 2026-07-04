@@ -381,6 +381,12 @@ function AppContent() {
                         <Link onClick={() => setIsMobileSidebarOpen(false)} to="/cartas-coletadas" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${isCollectedTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
               <span>{t[lang].collectedCards}</span>
             </Link>
+            {status?.isAdmin && (
+              <Link onClick={() => setIsMobileSidebarOpen(false)} to="/admin" className="flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors text-amber-500 hover:bg-[#161b22]">
+                <ShieldAlert size={16} />
+                <span>ADMIN</span>
+              </Link>
+            )}
             
             <div className="pt-4 pb-2">
               <div className="text-[10px] uppercase font-bold text-[#8b949e] px-3 mb-2">{t[lang].language}</div>
@@ -885,12 +891,7 @@ function AppContent() {
       
       <footer className="bg-[#0d1117] border-t border-[#30363d] px-2 sm:px-4 py-2 flex flex-col sm:flex-row justify-between items-center text-[9px] sm:text-[11px] text-[#8b949e] font-mono shrink-0 gap-1 sm:gap-0">
         <div className="flex items-center gap-2 text-center sm:text-left">
-          {status?.isAdmin && (
-            <Link to="/admin" className="hover:text-white transition-colors" title="Admin Dashboard">
-              <ShieldAlert size={14} className="inline mr-1" />
-              ADMIN
-            </Link>
-          )}
+
         </div>
         <div className="flex gap-3 sm:gap-4">
           <span className="hidden sm:inline">v1.0.1</span>
