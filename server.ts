@@ -20,7 +20,7 @@ const community = new SteamCommunity();
 let botState = {
   isClientLoggedIn: false,
   currentFarm: 'None',
-  cardsDropped: loadSession().cardsDropped || 0,
+  cardsDropped: 0,
   inventoryValue: 0,
   gamesOwned: 0,
   gamesWithDrops: 0,
@@ -33,11 +33,11 @@ let botState = {
   personaStateString: 'Offline',
   steamGuardRequired: false,
   steamGuardDomain: '',
-  refreshToken: loadSession().refreshToken,
+  refreshToken: '',
   activeAppIds: [] as number[],
   nextCheckTime: 0,
   logs: ['[System] Inicializando servidor Steam...'],
-  collectedCardsDetails: loadSession().collectedCardsDetails || [] as { image: string, title: string, minPrice: string }[]
+  collectedCardsDetails: [] as { image: string, title: string, minPrice: string }[]
 };
 
 function addLog(msg: string) {
@@ -47,7 +47,7 @@ function addLog(msg: string) {
 }
 
 // API Routes
-app.get('/api/status', (req, res) => {
+app.get('/api/status', async (req, res) => {
   let isAdmin = false;
   let isBanned = false;
   
@@ -69,10 +69,10 @@ app.get('/api/status', (req, res) => {
         const states = ['Offline', 'Online', 'Busy', 'Away', 'Snooze', 'Looking to Trade', 'Looking to Play', 'Invisible'];
         const stateIndex = cachedPersona.persona_state !== undefined ? cachedPersona.persona_state : 0;
         botState.personaStateString = states[stateIndex] || 'Online';
-        recordUserActivity(mySteamID64.toString(), botState.username, botState.avatar);
+        await recordUserActivity(mySteamID64.toString(), botState.username, botState.avatar);
       }
       
-      const stats = loadStats();
+      const stats = await loadStats();
       const userStats = stats.users[mySteamID64.toString()];
       if (userStats) {
         isAdmin = userStats.isAdmin || false;
@@ -226,7 +226,7 @@ function startCheckTimer() {
 
 function checkBadgesAndFarm() {
   addLog('Carregando página de insígnias...');
-  community.request('https://steamcommunity.com/my/badges/', (err, response, body) => {
+  community.request('https://steamcommunity.com/my/badges/', async (err, response, body) => {
     if (err || response.statusCode !== 200) {
       addLog(`[Erro Insígnias] Falha ao ler página de insígnias. Status: ${response?.statusCode}`);
       // Reschedule so the loop doesn't break
@@ -286,7 +286,7 @@ function checkBadgesAndFarm() {
       const difference = prevTotalDrops - totalDrops;
       botState.cardsDropped += difference; saveCurrentSession();
       addLog(`[Coleta] Sucesso! ${difference} nova(s) carta(s) coletada(s)/dropada(s)!`);
-      if (client.steamID) recordCardsDropped(client.steamID.getSteamID64(), difference);
+      if (client.steamID) await recordCardsDropped(client.steamID.getSteamID64(), difference);
       
       // Fetch new cards from inventory
       if (client.steamID) {
@@ -450,23 +450,23 @@ app.post('/api/steam-guard', (req, res) => {
   }
 });
 
-app.get('/api/admin/stats', (req, res) => {
-  const stats = loadStats();
+app.get('/api/admin/stats', async (req, res) => {
+  const stats = await loadStats();
   if (!client.steamID || !stats.users[client.steamID.getSteamID64().toString()]?.isAdmin) {
     return res.status(403).json({ error: 'Acesso negado. Apenas o administrador pode ver esta página.' });
   }
   res.json(stats);
 });
 
-app.post('/api/admin/update-user', (req, res) => {
-  const stats = loadStats();
+app.post('/api/admin/update-user', async (req, res) => {
+  const stats = await loadStats();
   if (!client.steamID || !stats.users[client.steamID.getSteamID64().toString()]?.isAdmin) {
     return res.status(403).json({ error: 'Acesso negado.' });
   }
   const { steamId, isAdmin, isBanned } = req.body;
   if (!steamId) return res.status(400).json({ error: 'SteamID is required' });
   
-  updateUserStatus(steamId, { isAdmin, isBanned });
+  await updateUserStatus(steamId, { isAdmin, isBanned });
   res.json({ success: true });
 });
 
@@ -604,6 +604,11 @@ client.on('disconnected', (eresult, msg) => {
 
 // Vite Middleware & Startup
 async function startServer() {
+  const sessionData = await loadSession();
+  botState.refreshToken = sessionData.refreshToken || '';
+  botState.cardsDropped = sessionData.cardsDropped || 0;
+  botState.collectedCardsDetails = sessionData.collectedCardsDetails || [];
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },

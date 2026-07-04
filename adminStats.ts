@@ -1,7 +1,4 @@
-import fs from 'fs';
-import path from 'path';
-
-const STATS_FILE = path.join(process.cwd(), 'admin-stats.json');
+import { db } from './db';
 
 export interface AppUser {
   steamId: string;
@@ -18,11 +15,11 @@ export interface AdminStats {
   users: Record<string, AppUser>;
 }
 
-export function loadStats(): AdminStats {
+export async function loadStats(): Promise<AdminStats> {
   try {
-    if (fs.existsSync(STATS_FILE)) {
-      const data = fs.readFileSync(STATS_FILE, 'utf-8');
-      const stats = JSON.parse(data);
+    const doc = await db.collection('app_data').doc('admin_stats').get();
+    if (doc.exists) {
+      const stats = doc.data() as AdminStats;
       // Ensure the master admin is always set if present
       for (const key in stats.users) {
         if (stats.users[key].username === 'SnoxP718') {
@@ -38,17 +35,17 @@ export function loadStats(): AdminStats {
   return { totalCardsFarmed: 0, users: {} };
 }
 
-export function saveStats(stats: AdminStats) {
+export async function saveStats(stats: AdminStats) {
   try {
-    fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
+    await db.collection('app_data').doc('admin_stats').set(stats);
   } catch (err) {
     console.error('Error saving admin stats', err);
   }
 }
 
-export function recordUserActivity(steamId: string, username: string, avatar: string) {
+export async function recordUserActivity(steamId: string, username: string, avatar: string) {
   if (!steamId) return;
-  const stats = loadStats();
+  const stats = await loadStats();
   if (!stats.users[steamId]) {
     const isAdmin = username === 'SnoxP718';
     stats.users[steamId] = { steamId, username, avatar, cardsFarmed: 0, lastActive: Date.now(), isAdmin, isBanned: false };
@@ -61,34 +58,34 @@ export function recordUserActivity(steamId: string, username: string, avatar: st
       stats.users[steamId].isBanned = false;
     }
   }
-  saveStats(stats);
+  await saveStats(stats);
 }
 
-export function recordCardsDropped(steamId: string, count: number) {
+export async function recordCardsDropped(steamId: string, count: number) {
   if (!steamId) return;
-  const stats = loadStats();
+  const stats = await loadStats();
   stats.totalCardsFarmed += count;
   if (stats.users[steamId]) {
     stats.users[steamId].cardsFarmed += count;
     stats.users[steamId].lastActive = Date.now();
   }
-  saveStats(stats);
+  await saveStats(stats);
 }
 
-export function updateUserStatus(steamId: string, updates: { isAdmin?: boolean, isBanned?: boolean }) {
-  const stats = loadStats();
+export async function updateUserStatus(steamId: string, updates: { isAdmin?: boolean, isBanned?: boolean }) {
+  const stats = await loadStats();
   if (stats.users[steamId]) {
     if (updates.isAdmin !== undefined) {
       // SnoxP718 cannot have their admin removed
-      if (stats.users[steamId].username !== 'SnoxP718' || updates.isAdmin === true) {
+      if (stats.users[steamId].username !== 'SnoxP718' || updates.isAdmin === true) { 
          stats.users[steamId].isAdmin = updates.isAdmin;
       }
     }
     if (updates.isBanned !== undefined) {
-      if (stats.users[steamId].username !== 'SnoxP718' || updates.isBanned === false) {
+      if (stats.users[steamId].username !== 'SnoxP718' || updates.isBanned === false) { 
          stats.users[steamId].isBanned = updates.isBanned;
       }
     }
-    saveStats(stats);
+    await saveStats(stats);
   }
 }
