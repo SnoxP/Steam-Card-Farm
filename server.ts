@@ -20,7 +20,7 @@ const community = new SteamCommunity();
 let botState = {
   isClientLoggedIn: false,
   currentFarm: 'None',
-  cardsDropped: 0,
+  cardsDropped: loadSession().cardsDropped || 0,
   inventoryValue: 0,
   gamesOwned: 0,
   gamesWithDrops: 0,
@@ -37,7 +37,7 @@ let botState = {
   activeAppIds: [] as number[],
   nextCheckTime: 0,
   logs: ['[System] Inicializando servidor Steam...'],
-  collectedCardsDetails: [] as { image: string, title: string, minPrice: string }[]
+  collectedCardsDetails: loadSession().collectedCardsDetails || [] as { image: string, title: string, minPrice: string }[]
 };
 
 function addLog(msg: string) {
@@ -82,7 +82,7 @@ app.get('/api/status', (req, res) => {
       // Auto-logout if banned
       if (isBanned && botState.isClientLoggedIn) {
         client.logOff();
-        botState.refreshToken = ''; saveSession('');
+        botState.refreshToken = ''; saveCurrentSession();
         botState.isClientLoggedIn = false;
         botState.currentFarm = 'Banned';
         botState.activeAppIds = [];
@@ -284,7 +284,7 @@ function checkBadgesAndFarm() {
     
     if (prevTotalDrops > 0 && totalDrops < prevTotalDrops) {
       const difference = prevTotalDrops - totalDrops;
-      botState.cardsDropped += difference;
+      botState.cardsDropped += difference; saveCurrentSession();
       addLog(`[Coleta] Sucesso! ${difference} nova(s) carta(s) coletada(s)/dropada(s)!`);
       if (client.steamID) recordCardsDropped(client.steamID.getSteamID64(), difference);
       
@@ -326,6 +326,7 @@ function checkBadgesAndFarm() {
                 if (botState.collectedCardsDetails.length > 50) {
                   botState.collectedCardsDetails.length = 50;
                 }
+                saveCurrentSession();
               });
             });
           }
@@ -473,7 +474,7 @@ app.post('/api/logout', (req, res) => {
   if (botState.isClientLoggedIn) {
     client.logOff();
   }
-  botState.refreshToken = ''; saveSession('');
+  botState.refreshToken = ''; saveCurrentSession();
   botState.isClientLoggedIn = false;
   botState.currentFarm = 'None';
   botState.activeAppIds = [];
@@ -485,7 +486,7 @@ app.post('/api/logout', (req, res) => {
 
 // Eventos do Steam-User
 client.on('refreshToken', (token) => {
-  botState.refreshToken = token; saveSession(token);
+  botState.refreshToken = token; saveCurrentSession();
   addLog('Sessão Steam salva com sucesso (Refresh Token).');
 });
 client.on('steamGuard', (domain, callback, lastCodeWrong) => {
@@ -592,7 +593,7 @@ client.on('error', (err) => {
   botState.isClientLoggedIn = false;
   addLog(`[Erro Cliente] ${err.message}`);
   if (err.message.includes('InvalidPassword') || err.message.includes('AccessDenied') || err.message.includes('RateLimitExceeded') || err.message.includes('LogonSessionReplaced')) {
-    botState.refreshToken = ''; saveSession('');
+    botState.refreshToken = ''; saveCurrentSession();
   }
 });
 
@@ -629,3 +630,11 @@ async function startServer() {
 }
 
 startServer();
+
+function saveCurrentSession() {
+  saveSession({
+    refreshToken: botState.refreshToken,
+    cardsDropped: botState.cardsDropped,
+    collectedCardsDetails: botState.collectedCardsDetails
+  });
+}
