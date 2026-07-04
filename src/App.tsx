@@ -5,16 +5,16 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, Menu, X } from 'lucide-react';
 import AdminPage from './components/AdminPage';
 
 function AppContent() {
   const [accountName, setAccountName] = useState('');
   const [password, setPassword] = useState('');
-  const [twoFactorCode, setTwoFactorCode] = useState('');
   const [steamGuardCode, setSteamGuardCode] = useState('');
   const [manualAppId, setManualAppId] = useState('');
   const [refreshToken, setRefreshToken] = useState(localStorage.getItem('steam_refresh_token') || '');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
   const [status, setStatus] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -98,10 +98,9 @@ function AppContent() {
       if (status.refreshToken && status.refreshToken !== refreshToken) {
         setRefreshToken(status.refreshToken);
         localStorage.setItem('steam_refresh_token', status.refreshToken);
-      } else if (status.refreshToken === '' && refreshToken !== '' && status.isClientLoggedIn === false && status.steamGuardRequired === false) {
-        // Only clear if explicitly cleared by the server when not logged in
-        setRefreshToken('');
-        localStorage.removeItem('steam_refresh_token');
+      } else if (status.refreshToken === '' && status.isClientLoggedIn === false && status.steamGuardRequired === false) {
+        // We shouldn't clear the local token just because the server restarted and has empty token.
+        // We will only clear it if we tried to auto-login and it failed, or on explicit logout.
       }
     }
   }, [status, refreshToken]);
@@ -112,7 +111,7 @@ function AppContent() {
       await fetch('/api/login-client', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accountName, password, twoFactorCode })
+        body: JSON.stringify({ accountName, password })
       });
       fetchStatus();
     } catch (e) {
@@ -236,35 +235,59 @@ function AppContent() {
   return (
     <div className="flex flex-col h-screen w-full bg-[#0d1117] text-[#c9d1d9] font-sans overflow-hidden">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between px-3 sm:px-4 py-3 sm:py-2 border-b border-[#30363d] bg-[#161b22] shrink-0 gap-3 sm:gap-0">
-        <div className="flex items-center gap-3">
-          <img src="https://i.ibb.co/vxg3Rhq1/image-removebg-preview.png" alt="CardHarvester" className="h-10 sm:h-12 object-contain" />
-          
-          <div className="flex flex-col justify-center -ml-1">
-            <div className="flex items-center text-2xl sm:text-[28px] font-black tracking-tighter italic leading-none" style={{ transform: 'skewX(-10deg)' }}>
-              <span className="text-white drop-shadow-sm">CARD</span>
-              <span className="text-[#6fc627] drop-shadow-sm">HARVESTER</span>
+        <div className="flex items-center justify-between w-full sm:w-auto">
+          <div className="flex items-center gap-3">
+            <img src="https://i.ibb.co/vxg3Rhq1/image-removebg-preview.png" alt="CardHarvester" className="h-10 sm:h-12 object-contain" />
+            
+            <div className="flex flex-col justify-center -ml-1">
+              <div className="flex items-center text-2xl sm:text-[28px] font-black tracking-tighter italic leading-none" style={{ transform: 'skewX(-10deg)' }}>
+                <span className="text-white drop-shadow-sm">CARD</span>
+                <span className="text-[#6fc627] drop-shadow-sm">HARVESTER</span>
+              </div>
+              <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold tracking-[0.18em] uppercase mt-0.5 ml-1">Steam Card Farmer</span>
             </div>
-            <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold tracking-[0.18em] uppercase mt-0.5 ml-1">Steam Card Farmer</span>
           </div>
+          
+          <button 
+            className="md:hidden p-2 text-[#8b949e] hover:text-white"
+            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+          >
+            {isMobileSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
-        <div className="flex items-center gap-3 sm:gap-6 text-[10px] sm:text-xs uppercase tracking-wider font-mono">
+        
+        <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 text-[10px] sm:text-xs uppercase tracking-wider font-mono">
           <div className="px-2 sm:px-3 py-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded">
             {status?.isClientLoggedIn ? 'Active' : 'Offline'}
           </div>
         </div>
       </header>
       
-      <main className="flex flex-col md:flex-row flex-1 overflow-hidden">
-        <aside className="hidden md:flex w-64 border-r border-[#30363d] bg-[#0d1117] flex-col shrink-0">
+      <main className="flex flex-col md:flex-row flex-1 overflow-hidden relative">
+        {/* Mobile Overlay */}
+        {isMobileSidebarOpen && (
+          <div 
+            className="md:hidden fixed inset-0 bg-black/50 z-40"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+        )}
+        
+        <aside className={`
+          fixed md:relative z-50 h-[calc(100vh-100px)] md:h-auto 
+          w-64 border-r border-[#30363d] bg-[#0d1117] flex-col shrink-0
+          transition-transform duration-200 ease-in-out
+          ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          md:flex
+        `}>
           <nav className="p-2 space-y-1">
             <div className="text-[10px] uppercase font-bold text-[#8b949e] px-3 mb-2">Management</div>
-            <Link to="/dashboard" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${!isCollectedTab && !isRestantesTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
+            <Link onClick={() => setIsMobileSidebarOpen(false)} to="/dashboard" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${!isCollectedTab && !isRestantesTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
               <span>Dashboard</span>
             </Link>
-            <Link to="/cartas-restantes" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${isRestantesTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
+            <Link onClick={() => setIsMobileSidebarOpen(false)} to="/cartas-restantes" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${isRestantesTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
               <span>Cartas Restantes</span>
             </Link>
-            <Link to="/cartas-coletadas" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${isCollectedTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
+            <Link onClick={() => setIsMobileSidebarOpen(false)} to="/cartas-coletadas" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${isCollectedTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
               <span>Cartas Coletadas</span>
             </Link>
           </nav>
@@ -663,16 +686,6 @@ function AppContent() {
                         className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono focus:border-blue-500 outline-none text-[#c9d1d9]" 
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-[#8b949e] uppercase font-bold">Steam Guard Code (Optional)</label>
-                      <input 
-                        type="text" 
-                        value={twoFactorCode}
-                        onChange={(e) => setTwoFactorCode(e.target.value)}
-                        placeholder="5-character code" 
-                        className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono focus:border-blue-500 outline-none text-[#c9d1d9]" 
-                      />
-                    </div>
                     {status?.steamGuardRequired && (
                       <div className="space-y-1.5 p-3 border border-blue-500/50 bg-blue-500/10 rounded">
                         <label className="text-[10px] text-blue-400 uppercase font-bold">Steam Guard Code ({status.steamGuardDomain})</label>
@@ -780,7 +793,7 @@ function AppContent() {
           )}
         </div>
         <div className="flex gap-3 sm:gap-4">
-          <span className="hidden sm:inline">v1.0.0</span>
+          <span className="hidden sm:inline">v1.0.1</span>
         </div>
       </footer>
     </div>

@@ -6,6 +6,8 @@ import SteamUser from 'steam-user';
 import SteamCommunity from 'steamcommunity';
 import * as cheerio from 'cheerio';
 
+import { loadSession, saveSession } from "./session";
+
 const app = express();
 const PORT = 3000;
 
@@ -31,7 +33,7 @@ let botState = {
   personaStateString: 'Offline',
   steamGuardRequired: false,
   steamGuardDomain: '',
-  refreshToken: '',
+  refreshToken: loadSession().refreshToken,
   activeAppIds: [] as number[],
   nextCheckTime: 0,
   logs: ['[System] Inicializando servidor Steam...'],
@@ -80,7 +82,7 @@ app.get('/api/status', (req, res) => {
       // Auto-logout if banned
       if (isBanned && botState.isClientLoggedIn) {
         client.logOff();
-        botState.refreshToken = '';
+        botState.refreshToken = ''; saveSession('');
         botState.isClientLoggedIn = false;
         botState.currentFarm = 'Banned';
         botState.activeAppIds = [];
@@ -306,7 +308,7 @@ function checkBadgesAndFarm() {
               const hashName = encodeURIComponent(card.market_hash_name || card.name);
               
               // Get price
-              community.request(`https://steamcommunity.com/market/priceoverview/?appid=753&currency=1&market_hash_name=${hashName}`, (errPrice: any, resPrice: any, bodyPrice: any) => {
+              community.request(`https://steamcommunity.com/market/priceoverview/?appid=753&currency=7&market_hash_name=${hashName}`, (errPrice: any, resPrice: any, bodyPrice: any) => {
                 let minPrice = 'N/A';
                 if (!errPrice && resPrice?.statusCode === 200) {
                   try {
@@ -471,7 +473,7 @@ app.post('/api/logout', (req, res) => {
   if (botState.isClientLoggedIn) {
     client.logOff();
   }
-  botState.refreshToken = '';
+  botState.refreshToken = ''; saveSession('');
   botState.isClientLoggedIn = false;
   botState.currentFarm = 'None';
   botState.activeAppIds = [];
@@ -483,7 +485,7 @@ app.post('/api/logout', (req, res) => {
 
 // Eventos do Steam-User
 client.on('refreshToken', (token) => {
-  botState.refreshToken = token;
+  botState.refreshToken = token; saveSession(token);
   addLog('Sessão Steam salva com sucesso (Refresh Token).');
 });
 client.on('steamGuard', (domain, callback, lastCodeWrong) => {
@@ -590,7 +592,7 @@ client.on('error', (err) => {
   botState.isClientLoggedIn = false;
   addLog(`[Erro Cliente] ${err.message}`);
   if (err.message.includes('InvalidPassword') || err.message.includes('AccessDenied') || err.message.includes('RateLimitExceeded') || err.message.includes('LogonSessionReplaced')) {
-    botState.refreshToken = '';
+    botState.refreshToken = ''; saveSession('');
   }
 });
 
@@ -617,6 +619,12 @@ async function startServer() {
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor rodando na porta ${PORT}`);
+    
+    // Auto-login on startup if token exists
+    if (botState.refreshToken) {
+      addLog('Encontrado Refresh Token, tentando logar automaticamente...');
+      client.logOn({ refreshToken: botState.refreshToken });
+    }
   });
 }
 
