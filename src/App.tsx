@@ -8,6 +8,93 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import { ShieldAlert, Menu, X } from 'lucide-react';
 import AdminPage from './components/AdminPage';
 
+const t = {
+  pt: {
+    management: "Gerenciamento",
+    dashboard: "Dashboard",
+    remainingCards: "Cartas Restantes",
+    collectedCards: "Cartas Coletadas",
+    language: "Idioma / Language",
+    steamProfile: "Perfil Steam",
+    steamStatus: "Status Steam",
+    activeSessions: "Sessões de Farm Ativas",
+    nextCheck: "Próxima verificação",
+    stop: "Parar",
+    noActiveSessions: "Nenhuma sessão ativa.",
+    console: "Console",
+    availableCardsList: "Cartas Disponíveis (Lista)",
+    allBadges: "Todas as Insígnias",
+    unknownGame: "Jogo Desconhecido",
+    drops: "drops",
+    noCardsLeft: "Nenhuma carta restante para dropar.",
+    loginToCheck: "Faça login para verificar as cartas.",
+    noBadges: "Nenhuma insígnia encontrada.",
+    waitingData: "Aguardando dados...",
+    warningRealFarming: "Aviso: Farming real requer acesso à rede CM. Você deve usar suas próprias credenciais; usar credenciais de terceiros é proibido.",
+    accountName: "Nome da Conta",
+    password: "Senha",
+    steamGuardCode: "Código Steam Guard",
+    submitCode: "Enviar Código",
+    triggerAutoFarm: "Iniciar Auto-Farm",
+    stopFarming: "Parar Farming",
+    logoutClear: "Sair e Limpar Sessão",
+    startAutoFarming: "Iniciar Auto-Farming",
+    restoreSession: "Restaurar Sessão",
+    clearToken: "Limpar Token",
+    manualFarm: "Farming Manual (AppID)",
+    farm: "Farm",
+    notConnected: "Não conectado",
+    totalRemaining: "Cartas Restantes (Total)",
+    totalValue: "Valor do Inventário",
+    gamesOwned: "Jogos (Total)",
+    gamesWithDrops: "Jogos com Drops",
+    noCardsYet: "Nenhuma carta coletada ainda nesta sessão.",
+    minPrice: "Menor preço"
+  },
+  en: {
+    management: "Management",
+    dashboard: "Dashboard",
+    remainingCards: "Remaining Cards",
+    collectedCards: "Collected Cards",
+    language: "Idioma / Language",
+    steamProfile: "Steam Profile",
+    steamStatus: "Steam Status",
+    activeSessions: "Active Farming Sessions",
+    nextCheck: "Next check",
+    stop: "Stop",
+    noActiveSessions: "No active farming sessions.",
+    console: "Console",
+    availableCardsList: "Available Cards",
+    allBadges: "All Badges",
+    unknownGame: "Unknown Game",
+    drops: "drops",
+    noCardsLeft: "No cards left to drop.",
+    loginToCheck: "Log in to check cards.",
+    noBadges: "No badges found.",
+    waitingData: "Waiting for data...",
+    warningRealFarming: "Warning: Real farming requires CM Network access. You must use your own account credentials; using others' credentials is strictly prohibited.",
+    accountName: "Account Name",
+    password: "Password",
+    steamGuardCode: "Steam Guard Code",
+    submitCode: "Submit Code",
+    triggerAutoFarm: "Trigger Auto-Farm",
+    stopFarming: "Stop Farming",
+    logoutClear: "Logout function AppContent() { Clear Session",
+    startAutoFarming: "Start Auto-Farming",
+    restoreSession: "Restore Session",
+    clearToken: "Clear Token",
+    manualFarm: "Manual Farm (AppID)",
+    farm: "Farm",
+    notConnected: "Not connected",
+    totalRemaining: "Remaining Cards (Total)",
+    totalValue: "Inventory Value",
+    gamesOwned: "Games Owned",
+    gamesWithDrops: "Games with Drops",
+    noCardsYet: "No cards collected yet in this session.",
+    minPrice: "Min Price"
+  }
+};
+
 function AppContent() {
   const [accountName, setAccountName] = useState('');
   const [password, setPassword] = useState('');
@@ -16,6 +103,10 @@ function AppContent() {
   const [refreshToken, setRefreshToken] = useState(localStorage.getItem('steam_refresh_token') || '');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
+    const [lang, setLang] = useState<'pt' | 'en'>(localStorage.getItem('lang') === 'en' ? 'en' : 'pt');
+  useEffect(() => {
+    localStorage.setItem('lang', lang);
+  }, [lang]);
   const [status, setStatus] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [activeConsoleTab, setActiveConsoleTab] = useState<'console' | 'available' | 'all'>('console');
@@ -233,8 +324,8 @@ function AppContent() {
   const isRestantesTab = location.pathname === '/cartas-restantes';
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#0d1117] text-[#c9d1d9] font-sans overflow-hidden">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between px-3 sm:px-4 py-3 sm:py-2 border-b border-[#30363d] bg-[#161b22] shrink-0 gap-3 sm:gap-0">
+    <div className="flex flex-col min-h-screen w-full bg-[#0d1117] text-[#c9d1d9] font-sans">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between px-3 sm:px-4 py-3 sm:py-2 border-b border-[#30363d] bg-[#161b22] shrink-0 gap-3 sm:gap-0 sticky top-0 z-50">
         <div className="flex items-center justify-between w-full sm:w-auto">
           <div className="flex items-center gap-3">
             <img src="https://i.ibb.co/vxg3Rhq1/image-removebg-preview.png" alt="CardHarvester" className="h-10 sm:h-12 object-contain" />
@@ -263,7 +354,7 @@ function AppContent() {
         </div>
       </header>
       
-      <main className="flex flex-col md:flex-row flex-1 overflow-hidden relative">
+      <main className="flex flex-col md:flex-row flex-1 relative items-start">
         {/* Mobile Overlay */}
         {isMobileSidebarOpen && (
           <div 
@@ -280,16 +371,25 @@ function AppContent() {
           md:flex
         `}>
           <nav className="p-2 space-y-1">
-            <div className="text-[10px] uppercase font-bold text-[#8b949e] px-3 mb-2">Management</div>
+            <div className="text-[10px] uppercase font-bold text-[#8b949e] px-3 mb-2">{t[lang].management}</div>
             <Link onClick={() => setIsMobileSidebarOpen(false)} to="/dashboard" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${!isCollectedTab && !isRestantesTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
-              <span>Dashboard</span>
+              <span>{t[lang].dashboard}</span>
             </Link>
             <Link onClick={() => setIsMobileSidebarOpen(false)} to="/cartas-restantes" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${isRestantesTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
-              <span>Cartas Restantes</span>
+              <span>{t[lang].remainingCards}</span>
             </Link>
-            <Link onClick={() => setIsMobileSidebarOpen(false)} to="/cartas-coletadas" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${isCollectedTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
-              <span>Cartas Coletadas</span>
+                        <Link onClick={() => setIsMobileSidebarOpen(false)} to="/cartas-coletadas" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${isCollectedTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
+              <span>{t[lang].collectedCards}</span>
             </Link>
+            
+            <div className="pt-4 pb-2">
+              <div className="text-[10px] uppercase font-bold text-[#8b949e] px-3 mb-2">{t[lang].language}</div>
+              <button onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')} className="flex items-center justify-between gap-3 px-3 py-2 w-full text-left rounded text-sm font-medium transition-colors text-[#8b949e] hover:bg-[#161b22]">
+                <span>{lang === 'pt' ? '🇧🇷 Português' : '🇺🇸 English'}</span>
+                <span className="text-[10px] bg-[#30363d] px-1.5 py-0.5 rounded text-white font-bold">{lang.toUpperCase()}</span>
+              </button>
+            </div>
+
           </nav>
           
           {status?.avatar && (
@@ -302,23 +402,23 @@ function AppContent() {
           )}
         </aside>
         
-        <section className="flex-1 flex flex-col p-2 sm:p-4 gap-2 sm:gap-4 overflow-y-auto">
+        <section className="flex-1 flex flex-col p-2 sm:p-4 gap-2 sm:gap-4">
           {isCollectedTab ? (
             <div className="flex flex-col gap-4 flex-1 min-h-0">
               <div className="bg-[#161b22] border border-[#30363d] p-4 rounded flex items-center justify-between shadow-sm shrink-0">
                 <div className="flex flex-col">
-                  <span className="text-[11px] text-[#8b949e] uppercase font-bold tracking-wider">Cartas Restantes (Total)</span>
+                  <span className="text-[11px] text-[#8b949e] uppercase font-bold tracking-wider">{t[lang].totalRemaining}</span>
                   <span className="text-3xl font-mono font-black text-amber-400">
                     {status?.availableGamesToFarm?.reduce((acc: number, g: any) => acc + (g.drops || 0), 0) || 0}
                   </span>
                 </div>
               </div>
 
-              <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col flex-1 min-h-0">
+              <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col flex-1">
                 <div className="px-4 py-3 border-b border-[#30363d] shrink-0 bg-[#21262d]/30">
-                  <h2 className="text-sm font-bold uppercase text-[#f0f6fc]">Cartas Coletadas ({status?.collectedCardsDetails?.length || 0})</h2>
+                  <h2 className="text-sm font-bold uppercase text-[#f0f6fc]">{t[lang].collectedCards} ({status?.collectedCardsDetails?.length || 0})</h2>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex-1 p-4">
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
                     {status?.collectedCardsDetails && status.collectedCardsDetails.length > 0 ? (
                       <>
@@ -329,7 +429,7 @@ function AppContent() {
                             </div>
                             <div className="p-2 sm:p-3 flex flex-col gap-1 border-t border-[#30363d]">
                               <span className="text-[10px] sm:text-xs font-bold text-[#c9d1d9] truncate" title={card.title}>{card.title}</span>
-                              <span className="text-[9px] sm:text-[10px] text-[#8b949e] font-mono">Menor preço: <span className="text-green-400 font-bold">{card.minPrice || 'N/A'}</span></span>
+                              <span className="text-[9px] sm:text-[10px] text-[#8b949e] font-mono">{t[lang].minPrice}: <span className="text-green-400 font-bold">{card.minPrice || 'N/A'}</span></span>
                             </div>
                           </div>
                         ))}
@@ -354,25 +454,25 @@ function AppContent() {
             </div>
           ) : isRestantesTab ? (
             <div className="flex flex-col gap-4 flex-1 min-h-0">
-              <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col flex-1 min-h-0">
+              <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col flex-1">
                 <div className="px-4 py-3 border-b border-[#30363d] shrink-0 bg-[#21262d]/30 flex justify-between items-center">
-                  <h2 className="text-sm font-bold uppercase text-[#f0f6fc]">Cartas Restantes ({status?.availableGamesToFarm?.length || 0} jogos)</h2>
+                  <h2 className="text-sm font-bold uppercase text-[#f0f6fc]">{t[lang].remainingCards} ({status?.availableGamesToFarm?.length || 0} {lang === 'pt' ? 'jogos' : 'games'})</h2>
                   <span className="text-sm font-mono text-amber-400 bg-amber-500/10 px-3 py-1 rounded border border-amber-500/20 font-bold">
-                    Total: {status?.availableGamesToFarm?.reduce((acc: number, g: any) => acc + (g.drops || 0), 0) || 0} cartas
+                    Total: {status?.availableGamesToFarm?.reduce((acc: number, g: any) => acc + (g.drops || 0), 0) || 0} {lang === 'pt' ? 'cartas' : 'cards'}
                   </span>
                 </div>
-                <div className="flex-1 p-4 overflow-y-auto space-y-2">
+                <div className="flex-1 p-4 space-y-2">
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
                     {status?.availableGamesToFarm && status.availableGamesToFarm.length > 0 ? (
                       <>
                         {status.availableGamesToFarm.map((game: any) => (
                           <div key={game.appId} className="flex flex-col p-3 rounded bg-[#0d1117] border border-[#30363d] hover:border-[#58a6ff]/50 transition-colors">
                             <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${game.appId}/header.jpg`} alt={game.name} className="w-full h-24 object-cover rounded mb-3 border border-[#21262d]" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                            <div className="text-[10px] sm:text-xs text-[#c9d1d9] font-bold truncate mb-1" title={game.name}>{game.name || 'Unknown Game'}</div>
+                            <div className="text-[10px] sm:text-xs text-[#c9d1d9] font-bold truncate mb-1" title={game.name}>{game.name || t[lang].unknownGame}</div>
                             <div className="flex justify-between items-end mt-auto">
                               <div className="text-[9px] sm:text-[10px] text-[#8b949e] font-mono">AppID: {game.appId}</div>
                               <div className="text-[10px] text-[#58a6ff] font-bold bg-[#58a6ff]/10 px-2 py-0.5 rounded border border-[#58a6ff]/20">
-                                {game.drops} drop{game.drops > 1 ? 's' : ''}
+                                {game.drops} drop
                               </div>
                             </div>
                           </div>
@@ -406,14 +506,14 @@ function AppContent() {
 
 
             <Link to="/cartas-restantes" className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px] cursor-pointer hover:border-amber-500/50 hover:bg-[#1c2128] transition-colors">
-              <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">Cartas Restantes</span>
+              <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">{t[lang].remainingCards}</span>
               <span className="text-lg sm:text-2xl font-mono text-amber-400">
                 {status?.availableGamesToFarm?.reduce((acc: number, g: any) => acc + (g.drops || 0), 0) || 0}
               </span>
             </Link>
 
             <Link to="/cartas-coletadas" className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px] cursor-pointer hover:border-blue-500/50 hover:bg-[#1c2128] transition-colors">
-              <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">Cartas Coletadas</span>
+              <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">{t[lang].collectedCards}</span>
               <span className="text-lg sm:text-2xl font-mono text-green-400">{status?.cardsDropped || 0}</span>
             </Link>
 
@@ -435,13 +535,13 @@ function AppContent() {
                   </div>
                 )}
                 <div className="flex flex-col min-w-0">
-                  <span className="text-[9px] text-[#8b949e] uppercase font-bold tracking-wider">Perfil Steam</span>
+                  <span className="text-[9px] text-[#8b949e] uppercase font-bold tracking-wider">{t[lang].steamProfile}</span>
                   <span className="text-xs font-bold text-white truncate max-w-[150px]">{status?.username || 'Não conectado'}</span>
                 </div>
               </div>
               
               <div className="flex flex-col items-end shrink-0">
-                <span className="text-[9px] text-[#8b949e] uppercase font-bold tracking-wider">Status Steam</span>
+                <span className="text-[9px] text-[#8b949e] uppercase font-bold tracking-wider">{t[lang].steamStatus}</span>
                 <span className={`text-sm font-bold font-mono ${getPersonaDisplay(status?.personaStateString).color}`}>
                   {getPersonaDisplay(status?.personaStateString).label}
                 </span>
@@ -450,10 +550,10 @@ function AppContent() {
           </div>
           
           <div className="flex-none md:flex-1 grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4 min-h-0">
-            <div className="lg:col-span-2 flex flex-col gap-2 sm:gap-4 h-[350px] md:h-auto min-h-0">
+            <div className="lg:col-span-2 flex flex-col gap-2 sm:gap-4">
               <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col shrink-0">
                 <div className="px-4 py-2 border-b border-[#30363d] flex justify-between items-center">
-                  <h2 className="text-xs font-bold uppercase text-[#f0f6fc]">Active Farming Sessions</h2>
+                  <h2 className="text-xs font-bold uppercase text-[#f0f6fc]">{t[lang].activeSessions}</h2>
                   {status?.isClientLoggedIn && status?.activeAppIds && status.activeAppIds.length > 0 && timeLeft !== null && (
                     <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20 flex items-center gap-1.5 font-bold uppercase">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
@@ -461,7 +561,7 @@ function AppContent() {
                     </span>
                   )}
                 </div>
-                <div className="p-4 flex gap-3 overflow-x-auto">
+                <div className="p-4 flex gap-3 flex-wrap">
                   {status?.activeAppIds && status.activeAppIds.length > 0 ? (
                     status.activeAppIds.map((id: number) => (
                       <div key={id} className="flex flex-col items-center gap-1.5 p-2 bg-[#0d1117] border border-[#30363d] rounded shrink-0 relative">
@@ -482,13 +582,13 @@ function AppContent() {
                       </div>
                     ))
                   ) : (
-                    <span className="text-xs text-[#8b949e]">No active farming sessions.</span>
+                    <span className="text-xs text-[#8b949e]">{t[lang].noActiveSessions}</span>
                   )}
                 </div>
               </div>
 
-              <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col flex-1 min-h-0">
-                <div className="flex border-b border-[#30363d] shrink-0 overflow-x-auto">
+              <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col flex-1">
+                <div className="flex border-b border-[#30363d] shrink-0 flex-wrap">
                   <button 
                     onClick={() => setActiveConsoleTab('console')}
                     className={`flex-1 min-w-[80px] px-3 py-2 text-[10px] sm:text-xs font-bold uppercase transition-colors border-b-2 ${activeConsoleTab === 'console' ? 'border-[#58a6ff] text-[#f0f6fc]' : 'border-transparent text-[#8b949e] hover:text-[#c9d1d9]'}`}
@@ -510,7 +610,7 @@ function AppContent() {
                 </div>
                 
                 {activeConsoleTab === 'console' && (
-                  <div ref={consoleRef} className="flex-1 p-4 font-mono text-[12px] leading-relaxed overflow-y-auto text-[#d1d5db]">
+                  <div ref={consoleRef} className="flex-1 p-4 font-mono text-[12px] leading-relaxed text-[#d1d5db]">
                     {logs.map((log: string, i: number) => (
                       <div key={i} className={log.includes('[Erro') ? 'text-red-400' : log.includes('sucesso') ? 'text-green-400' : ''}>
                         {log}
@@ -524,19 +624,19 @@ function AppContent() {
                 )}
 
                 {activeConsoleTab === 'available' && (
-                  <div className="flex-1 p-4 overflow-y-auto space-y-2">
+                  <div className="flex-1 p-4 space-y-2">
                     {status?.availableGamesToFarm && status.availableGamesToFarm.length > 0 ? (
                       status.availableGamesToFarm.map((game: any) => (
                         <div key={game.appId} className="flex items-center justify-between p-2 rounded bg-[#0d1117] border border-[#30363d]">
                           <div className="flex items-center gap-3">
                             <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${game.appId}/capsule_sm_120.jpg`} alt={game.name} className="w-12 h-5 object-cover rounded" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                             <div>
-                              <div className="text-xs text-[#c9d1d9] font-bold">{game.name || 'Unknown Game'}</div>
+                              <div className="text-xs text-[#c9d1d9] font-bold">{game.name || t[lang].unknownGame}</div>
                               <div className="text-[10px] text-[#8b949e] font-mono">AppID: {game.appId}</div>
                             </div>
                           </div>
                           <div className="text-xs text-[#58a6ff] font-bold">
-                            {game.drops} drop{game.drops > 1 ? 's' : ''}
+                            {game.drops} drop
                           </div>
                         </div>
                       ))
@@ -549,19 +649,19 @@ function AppContent() {
                 )}
 
                 {activeConsoleTab === 'all' && (
-                  <div className="flex-1 p-4 overflow-y-auto space-y-2">
+                  <div className="flex-1 p-4 space-y-2">
                     {status?.allBadges && status.allBadges.length > 0 ? (
                       status.allBadges.map((game: any) => (
                         <div key={game.appId} className="flex items-center justify-between p-2 rounded bg-[#0d1117] border border-[#30363d] gap-2">
                           <div className="flex items-center gap-3 min-w-0">
                             <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${game.appId}/capsule_sm_120.jpg`} alt={game.name} className="w-12 h-5 object-cover rounded shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                             <div className="min-w-0">
-                              <div className="text-xs text-[#c9d1d9] font-bold truncate">{game.name || 'Unknown Game'}</div>
+                              <div className="text-xs text-[#c9d1d9] font-bold truncate">{game.name || t[lang].unknownGame}</div>
                               <div className="text-[10px] text-[#8b949e] font-mono truncate">AppID: {game.appId} | Texto: <span className="text-yellow-500/80 font-sans italic">"{game.text || 'Nenhum'}"</span></div>
                             </div>
                           </div>
                           <div className={`text-xs font-bold shrink-0 ${game.drops > 0 ? 'text-[#58a6ff]' : 'text-[#8b949e]'}`}>
-                            {game.drops > 0 ? `${game.drops} drop${game.drops > 1 ? 's' : ''}` : '0 drops'}
+                            {game.drops > 0 ? `${game.drops} drop$` : '0 {t[lang].drops}'}
                           </div>
                         </div>
                       ))
@@ -575,7 +675,7 @@ function AppContent() {
               </div>
             </div>
             
-            <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col flex-none md:flex-1 md:h-full overflow-y-auto">
+            <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col flex-none md:flex-1">
               <div className="px-3 sm:px-4 py-2 border-b border-[#30363d] bg-[#21262d]/30 shrink-0">
                 <h2 className="text-xs font-bold uppercase text-[#f0f6fc]">Account Link Configuration</h2>
               </div>
@@ -619,7 +719,7 @@ function AppContent() {
                           disabled={loading}
                           className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
                         >
-                          {loading ? '...' : 'Restore Session'}
+                          {loading ? '...' : t[lang].restoreSession}
                         </button>
                         <button 
                           onClick={handleLogout}
@@ -632,7 +732,7 @@ function AppContent() {
                     )}
                     {status?.isClientLoggedIn && !status?.steamGuardRequired && (
                       <div className="mt-4 pt-4 border-t border-[#30363d] space-y-2">
-                        <label className="text-[10px] text-[#8b949e] uppercase font-bold">Manual Farm (AppID)</label>
+                        <label className="text-[10px] text-[#8b949e] uppercase font-bold">{t[lang].manualFarm}</label>
                         <div className="flex gap-2">
                           <input 
                             type="text" 
@@ -664,20 +764,20 @@ function AppContent() {
                 ) : (
                   <>
                     <div className="bg-yellow-500/10 border border-yellow-500/30 p-3 rounded text-[11px] text-yellow-200 leading-normal">
-                      <p><strong>Warning:</strong> Real farming requires CM Network access. You must use your own account credentials; using others' credentials is strictly prohibited.</p>
+                      <p><strong>Warning:</strong> {t[lang].warningRealFarming}</p>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] text-[#8b949e] uppercase font-bold">Account Name</label>
+                      <label className="text-[10px] text-[#8b949e] uppercase font-bold">{t[lang].accountName}</label>
                       <input 
                         type="text" 
                         value={accountName}
                         onChange={(e) => setAccountName(e.target.value)}
-                        placeholder="Username"
+                        placeholder={t[lang].accountName}
                         className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono focus:border-blue-500 outline-none text-[#c9d1d9]" 
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] text-[#8b949e] uppercase font-bold">Password</label>
+                      <label className="text-[10px] text-[#8b949e] uppercase font-bold">{t[lang].password}</label>
                       <input 
                         type="password" 
                         value={password}
@@ -693,7 +793,7 @@ function AppContent() {
                           type="text" 
                           value={steamGuardCode}
                           onChange={(e) => setSteamGuardCode(e.target.value)}
-                          placeholder="Code (e.g., A1B2C)" 
+                          placeholder={t[lang].steamGuardCode} 
                           className="w-full bg-[#0d1117] border border-blue-500/50 rounded px-3 py-2 text-xs font-mono focus:border-blue-500 outline-none text-[#c9d1d9]" 
                         />
                         <button 
@@ -738,14 +838,14 @@ function AppContent() {
                           disabled={loading}
                           className="flex-1 py-2 bg-[#238636] hover:bg-[#2ea043] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer disabled:opacity-50"
                         >
-                          {loading ? '...' : 'Start Auto-Farming'}
+                          {loading ? '...' : t[lang].startAutoFarming}
                         </button>
                       </div>
                     )}
                     
                     {status?.isClientLoggedIn && !status?.steamGuardRequired && (
                       <div className="mt-4 pt-4 border-t border-[#30363d] space-y-2">
-                        <label className="text-[10px] text-[#8b949e] uppercase font-bold">Manual Farm (AppID)</label>
+                        <label className="text-[10px] text-[#8b949e] uppercase font-bold">{t[lang].manualFarm}</label>
                         <div className="flex gap-2">
                           <input 
                             type="text" 
