@@ -1,4 +1,7 @@
-import { db } from './db';
+import fs from 'fs';
+import path from 'path';
+
+const SESSION_FILE = path.join(process.cwd(), 'session.json');
 
 export interface SessionData {
   refreshToken: string;
@@ -8,20 +11,19 @@ export interface SessionData {
 
 export async function loadSession(): Promise<SessionData> {
   try {
-    const doc = await db.collection('app_data').doc('session').get();
-    if (doc.exists) {
-      return doc.data() as SessionData;
+    if (fs.existsSync(SESSION_FILE)) {
+      return JSON.parse(fs.readFileSync(SESSION_FILE, 'utf-8'));
     }
   } catch (e) {
-    console.error('Error loading session from Firestore:', e);
+    console.error('Error loading session:', e);
   }
   return { refreshToken: '', cardsDropped: 0, collectedCardsDetails: [] };
 }
 
 export async function saveSession(data: SessionData) {
   try {
-    await db.collection('app_data').doc('session').set(data);
+    fs.writeFileSync(SESSION_FILE, JSON.stringify(data, null, 2));
   } catch (e) {
-    console.error('Error saving session to Firestore:', e);
+    console.error('Error saving session:', e);
   }
 }

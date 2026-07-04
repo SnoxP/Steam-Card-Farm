@@ -1,4 +1,7 @@
-import fs from 'fs';
+import re
+
+# Revert to fs for adminStats
+content_admin = """import fs from 'fs';
 import path from 'path';
 
 const STATS_FILE = path.join(process.cwd(), 'admin-stats.json');
@@ -90,3 +93,42 @@ export async function updateUserStatus(steamId: string, updates: { isAdmin?: boo
     await saveStats(stats);
   }
 }
+"""
+
+with open('adminStats.ts', 'w') as f:
+    f.write(content_admin)
+
+# Revert session.ts
+content_session = """import fs from 'fs';
+import path from 'path';
+
+const SESSION_FILE = path.join(process.cwd(), 'session.json');
+
+export interface SessionData {
+  refreshToken: string;
+  cardsDropped?: number;
+  collectedCardsDetails?: { image: string; title: string; minPrice: string }[];
+}
+
+export async function loadSession(): Promise<SessionData> {
+  try {
+    if (fs.existsSync(SESSION_FILE)) {
+      return JSON.parse(fs.readFileSync(SESSION_FILE, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error loading session:', e);
+  }
+  return { refreshToken: '', cardsDropped: 0, collectedCardsDetails: [] };
+}
+
+export async function saveSession(data: SessionData) {
+  try {
+    fs.writeFileSync(SESSION_FILE, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.error('Error saving session:', e);
+  }
+}
+"""
+
+with open('session.ts', 'w') as f:
+    f.write(content_session)

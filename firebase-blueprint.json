@@ -1,0 +1,16 @@
+{
+  "entities": {
+    "AdminStats": {
+      "title": "AdminStats",
+      "description": "Stats for admin",
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "firestore": {
+    "/app_data/{docId}": {
+      "schema": "AdminStats",
+      "description": "App data"
+    }
+  }
+}
