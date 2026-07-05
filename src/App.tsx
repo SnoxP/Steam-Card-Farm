@@ -8,6 +8,27 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import { ShieldAlert, Menu, X } from 'lucide-react';
 import AdminPage from './components/AdminPage';
 
+function getSessionId() {
+  let sid = localStorage.getItem('app_session_id');
+  if (!sid) {
+    sid = Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('app_session_id', sid);
+  }
+  return sid;
+}
+
+const originalFetch = window.fetch;
+window.fetch = async function() {
+  let [resource, config] = arguments;
+  if (!config) config = {};
+  if (!config.headers) config.headers = {};
+  if (typeof resource === 'string' && resource.startsWith('/api/')) {
+    config.headers['x-session-id'] = getSessionId();
+  }
+  return originalFetch(resource, config);
+};
+
+
 const t = {
   pt: {
     management: "Gerenciamento",
@@ -616,7 +637,7 @@ function AppContent() {
                 </div>
                 
                 {activeConsoleTab === 'console' && (
-                  <div ref={consoleRef} className="flex-1 p-4 font-mono text-[12px] leading-relaxed text-[#d1d5db]">
+                  <div ref={consoleRef} className="flex-1 p-4 font-mono text-[12px] leading-relaxed text-[#d1d5db] overflow-y-auto max-h-[60vh]">
                     {logs.map((log: string, i: number) => (
                       <div key={i} className={log.includes('[Erro') ? 'text-red-400' : log.includes('sucesso') ? 'text-green-400' : ''}>
                         {log}

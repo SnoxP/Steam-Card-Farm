@@ -1,7 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 
-const SESSION_FILE = path.join(process.cwd(), 'session.json');
+const SESSIONS_DIR = path.join(process.cwd(), 'sessions');
+
+if (!fs.existsSync(SESSIONS_DIR)) {
+  fs.mkdirSync(SESSIONS_DIR);
+}
 
 export interface SessionData {
   refreshToken: string;
@@ -9,10 +13,17 @@ export interface SessionData {
   collectedCardsDetails?: { image: string; title: string; minPrice: string }[];
 }
 
-export async function loadSession(): Promise<SessionData> {
+function getSessionFile(sessionId: string) {
+  // sanitize
+  const safeId = sessionId.replace(/[^a-zA-Z0-9_-]/g, '');
+  return path.join(SESSIONS_DIR, `session_${safeId}.json`);
+}
+
+export async function loadSession(sessionId: string): Promise<SessionData> {
   try {
-    if (fs.existsSync(SESSION_FILE)) {
-      return JSON.parse(fs.readFileSync(SESSION_FILE, 'utf-8'));
+    const file = getSessionFile(sessionId);
+    if (fs.existsSync(file)) {
+      return JSON.parse(fs.readFileSync(file, 'utf-8'));
     }
   } catch (e) {
     console.error('Error loading session:', e);
@@ -20,9 +31,10 @@ export async function loadSession(): Promise<SessionData> {
   return { refreshToken: '', cardsDropped: 0, collectedCardsDetails: [] };
 }
 
-export async function saveSession(data: SessionData) {
+export async function saveSession(sessionId: string, data: SessionData) {
   try {
-    fs.writeFileSync(SESSION_FILE, JSON.stringify(data, null, 2));
+    const file = getSessionFile(sessionId);
+    fs.writeFileSync(file, JSON.stringify(data, null, 2));
   } catch (e) {
     console.error('Error saving session:', e);
   }
