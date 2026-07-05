@@ -114,18 +114,13 @@ class SteamBotSession {
         return;
       }
       this.addLog('Iniciando verificação de insígnias e cartas disponíveis...');
-      this.community.getWebApiOauthToken((err: any, token: string) => {
+      
+      this.community.request({
+        uri: 'https://steamcommunity.com/my/badges',
+        headers: { 'Cookie': this.community._cookies.join('; ') }
+      }, (err: any, response: any, body: any) => {
         if (err) {
-          this.addLog(`[Erro] Falha ao obter OAuth Token: ${err.message}`);
-          this.startCheckTimer();
-          return;
-        }
-        this.community.request({
-          uri: 'https://steamcommunity.com/my/badges',
-          headers: { 'Cookie': this.community._cookies.join('; ') }
-        }, (err: any, response: any, body: any) => {
-          if (err) {
-            this.addLog(`[Erro] Falha ao acessar página de badges: ${err.message}`);
+          this.addLog(`[Erro] Falha ao acessar página de badges: ${err.message}`);
             this.startCheckTimer();
             return;
           }
@@ -179,7 +174,6 @@ class SteamBotSession {
           }
           this.startCheckTimer();
         });
-      });
     }
 
     public setupEvents() {
