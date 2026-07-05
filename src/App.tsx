@@ -25,7 +25,7 @@ window.fetch = async function() {
   if (typeof resource === 'string' && resource.startsWith('/api/')) {
     config.headers['x-session-id'] = getSessionId();
   }
-  return originalFetch(resource, config);
+  return originalFetch.call(window, resource, config);
 };
 
 
@@ -637,7 +637,7 @@ function AppContent() {
                 </div>
                 
                 {activeConsoleTab === 'console' && (
-                  <div ref={consoleRef} className="flex-1 p-4 font-mono text-[12px] leading-relaxed text-[#d1d5db] overflow-y-auto max-h-[60vh]">
+                  <div ref={consoleRef} className="flex-1 p-4 font-mono text-[12px] leading-relaxed text-[#d1d5db] overflow-y-auto h-[250px] min-h-[250px] max-h-[400px]">
                     {logs.map((log: string, i: number) => (
                       <div key={i} className={log.includes('[Erro') ? 'text-red-400' : log.includes('sucesso') ? 'text-green-400' : ''}>
                         {log}
