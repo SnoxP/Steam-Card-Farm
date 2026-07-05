@@ -46,7 +46,7 @@ class SteamBotSession {
     }
 
     public addLog(msg: string) {
-        const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+        const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
         this.botState.logs.push(`[${timestamp}] ${msg}`);
         if (this.botState.logs.length > 50) this.botState.logs.shift();
     }
