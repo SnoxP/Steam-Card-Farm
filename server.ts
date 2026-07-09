@@ -64,11 +64,6 @@ class SteamBotSession {
         this.botState.refreshToken = sessionData.refreshToken || '';
         this.botState.cardsDropped = sessionData.cardsDropped || 0;
         this.botState.collectedCardsDetails = sessionData.collectedCardsDetails || [];
-        
-        if (this.botState.refreshToken) {
-            this.addLog('Encontrado Refresh Token, tentando logar automaticamente...');
-            this.client.logOn({ refreshToken: this.botState.refreshToken });
-        }
     }
 
     // Insert parseDropsCount here
@@ -117,7 +112,7 @@ class SteamBotSession {
       
       this.community.request({
         uri: 'https://steamcommunity.com/my/badges',
-        headers: { 'Cookie': this.community._cookies.join('; ') }
+        headers: { 'Cookie': (this.community._cookies || []).join('; ') }
       }, (err: any, response: any, body: any) => {
         if (err) {
           this.addLog(`[Erro] Falha ao acessar página de badges: ${err.message}`);
@@ -381,7 +376,12 @@ app.post('/api/login-client', (req, res) => {
       session.addLog('Usando código Steam Guard fornecido...');
     }
   }
-  session.client.logOn(logOnOptions);
+  try {
+    session.client.logOn(logOnOptions);
+  } catch (e: any) {
+    session.addLog(`[Erro] Falha ao iniciar login: ${e.message}`);
+    return res.status(400).json({ error: e.message });
+  }
   res.json({ success: true, message: 'Tentando logar no Client Matrix...' });
 });
 
