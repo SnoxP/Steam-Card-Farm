@@ -16,7 +16,9 @@ export default function TutorialPage() {
           <section className="space-y-4">
             <h2 className="text-xl font-bold text-[#58a6ff]">Passo 1: Acesse o aplicativo da Steam no celular</h2>
             <p className="text-sm leading-relaxed text-[#8b949e]">
-              Abra o aplicativo da Steam no seu dispositivo móvel e toque no ícone de "Escudo" no menu inferior. Essa aba é a aba do Steam Guard, onde os códigos de acesso são gerados.
+              Abra o aplicativo do Steam no seu celular e faça login, se necessário.<br/>
+              Toque no ícone de escudo (Steam Guard) localizado no menu inferior (é o ícone central).<br/>
+              Se o código não aparecer logo de cara ou se você precisar configurar/sincronizar, toque no ícone da engrenagem (Configurações) no canto superior direito dessa tela.
             </p>
             <div className="bg-[#161b22] border border-[#30363d] p-4 rounded-lg shadow-sm">
               <img 
@@ -30,7 +32,8 @@ export default function TutorialPage() {
           <section className="space-y-4">
             <h2 className="text-xl font-bold text-[#58a6ff]">Passo 2: Encontre e copie o código</h2>
             <p className="text-sm leading-relaxed text-[#8b949e]">
-              Na tela do Steam Guard, você verá um código de 5 caracteres sendo gerado e atualizado periodicamente. Esse é o código que você precisa inserir no campo do CardHarvester.
+              Selecione a opção "Obter código do Steam Guard" (ou "My Steam Guard Code").<br/>
+              Pronto! Um código de 5 dígitos será gerado na tela e ele muda a cada 30 segundos por segurança.
             </p>
             <div className="bg-[#161b22] border border-[#30363d] p-4 rounded-lg shadow-sm">
               <img 

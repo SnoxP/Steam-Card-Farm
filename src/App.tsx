@@ -831,12 +831,14 @@ function AppContent() {
                         >
                           Submit Code
                         </button>
-                        <Link 
-                          to="/tutorial"
-                          className="w-full mt-2 py-2 bg-transparent hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-xs font-bold transition-colors shadow-sm uppercase flex justify-center items-center cursor-pointer"
-                        >
-                          Não sei o que fazer (Ajuda)
-                        </Link>
+                        <div className="flex justify-center w-full mt-2">
+                          <Link 
+                            to="/tutorial"
+                            className="text-[10px] text-blue-400/80 hover:text-blue-400 transition-colors cursor-pointer"
+                          >
+                            Não sabe o que fazer? (Ajuda)
+                          </Link>
+                        </div>
                       </div>
                     )}
                     {status?.isClientLoggedIn ? (
