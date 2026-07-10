@@ -431,17 +431,27 @@ app.post('/api/farm-auto', (req, res) => {
 app.post('/api/farm-manual', (req, res) => {
   const session = getSession(req);
   const { appId } = req.body;
-  if (!appId) return res.status(400).json({ error: 'AppID is required' });
+  if (appId === undefined) return res.status(400).json({ error: 'AppID is required' });
   
   if (session.botState.isPausedForPlaying) {
     return res.status(400).json({ error: 'O farming está pausado porque você está jogando em outro dispositivo. Feche o jogo primeiro.' });
   }
+
+  if (appId.trim() === '') {
+    session.botState.isManualPaused = true;
+    session.client.gamesPlayed([]);
+    session.botState.currentFarm = 'Nenhum';
+    session.botState.activeAppIds = [];
+    session.addLog('Todos os jogos foram finalizados (parados manualmente).');
+    return res.json({ success: true });
+  }
+
   const appIds = appId.split(',').map((id: string) => parseInt(id.trim(), 10)).filter((id: number) => !isNaN(id));
   
   if (appIds.length > 0 && session.botState.isClientLoggedIn) {
-    session.botState.isManualPaused = false;
+    session.botState.isManualPaused = true;
     session.client.gamesPlayed(appIds);
-    session.botState.currentFarm = `${appIds.length} manual games (${appIds.join(', ')})`;
+    session.botState.currentFarm = `${appIds.length} jogo(s) manual(is) (${appIds.join(', ')})`;
     session.botState.activeAppIds = appIds;
     session.addLog(`Farming manual iniciado para AppIDs: ${appIds.join(', ')}`);
     res.json({ success: true });

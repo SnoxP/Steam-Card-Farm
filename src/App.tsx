@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { ShieldAlert, Menu, X } from 'lucide-react';
+import { ShieldAlert, Menu, X, HelpCircle } from 'lucide-react';
 import AdminPage from './components/AdminPage';
 import TutorialPage from './components/TutorialPage';
 
@@ -122,6 +122,7 @@ function AppContent() {
   const [password, setPassword] = useState('');
   const [steamGuardCode, setSteamGuardCode] = useState('');
   const [manualAppId, setManualAppId] = useState('');
+  const [showTagsHelp, setShowTagsHelp] = useState(false);
   const [refreshToken, setRefreshToken] = useState(localStorage.getItem('steam_refresh_token') || '');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
@@ -766,12 +767,12 @@ function AppContent() {
                             type="text" 
                             value={manualAppId}
                             onChange={(e) => setManualAppId(e.target.value)}
-                            placeholder="e.g., 730, 440" 
+                            placeholder="Ex: 730, 570, 440" 
                             className="flex-1 bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono focus:border-blue-500 outline-none text-[#c9d1d9]" 
                           />
                           <button 
                             onClick={handleManualFarm}
-                            disabled={loading || !manualAppId}
+                            disabled={loading}
                             className="px-4 py-2 bg-[#1f6feb] hover:bg-[#388bfd] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer disabled:opacity-50"
                           >
                             Farm
@@ -784,6 +785,18 @@ function AppContent() {
                             >
                               Stop
                             </button>
+                          )}
+                        </div>
+                        <div className="mt-2">
+                          <button onClick={() => setShowTagsHelp(!showTagsHelp)} className="text-[#8b949e] hover:text-white transition-colors flex items-center gap-1 text-xs">
+                            <HelpCircle size={14} /> Como usar as tags de AppID?
+                          </button>
+                          {showTagsHelp && (
+                            <div className="mt-2 p-3 bg-[#161b22] border border-[#30363d] rounded text-xs text-[#8b949e] space-y-2">
+                              <p><strong className="text-white">Sem AppID:</strong> Irá finalizar (parar) todos os jogos que estão sendo rodados no momento.</p>
+                              <p><strong className="text-white">1 AppID:</strong> Irá rodar um único jogo escolhido. (Ex: 730)</p>
+                              <p><strong className="text-white">Múltiplos AppIDs:</strong> Irá rodar múltiplos jogos ao mesmo tempo. (Ex: 730, 570, 440, 578080 - CS:GO, Dota 2, TF2, PUBG)</p>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -887,12 +900,12 @@ function AppContent() {
                             type="text" 
                             value={manualAppId}
                             onChange={(e) => setManualAppId(e.target.value)}
-                            placeholder="e.g., 730, 440" 
+                            placeholder="Ex: 730, 570, 440" 
                             className="flex-1 bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono focus:border-blue-500 outline-none text-[#c9d1d9]" 
                           />
                           <button 
                             onClick={handleManualFarm}
-                            disabled={loading || !manualAppId}
+                            disabled={loading}
                             className="px-4 py-2 bg-[#1f6feb] hover:bg-[#388bfd] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer disabled:opacity-50"
                           >
                             Farm
@@ -905,6 +918,18 @@ function AppContent() {
                             >
                               Stop
                             </button>
+                          )}
+                        </div>
+                        <div className="mt-2">
+                          <button onClick={() => setShowTagsHelp(!showTagsHelp)} className="text-[#8b949e] hover:text-white transition-colors flex items-center gap-1 text-xs">
+                            <HelpCircle size={14} /> Como usar as tags de AppID?
+                          </button>
+                          {showTagsHelp && (
+                            <div className="mt-2 p-3 bg-[#161b22] border border-[#30363d] rounded text-xs text-[#8b949e] space-y-2">
+                              <p><strong className="text-white">Sem AppID:</strong> Irá finalizar (parar) todos os jogos que estão sendo rodados no momento.</p>
+                              <p><strong className="text-white">1 AppID:</strong> Irá rodar um único jogo escolhido. (Ex: 730)</p>
+                              <p><strong className="text-white">Múltiplos AppIDs:</strong> Irá rodar múltiplos jogos ao mesmo tempo. (Ex: 730, 570, 440, 578080 - CS:GO, Dota 2, TF2, PUBG)</p>
+                            </div>
                           )}
                         </div>
                       </div>
