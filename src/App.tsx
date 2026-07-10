@@ -793,9 +793,9 @@ function AppContent() {
                           </button>
                           {showTagsHelp && (
                             <div className="mt-2 p-3 bg-[#161b22] border border-[#30363d] rounded text-xs text-[#8b949e] space-y-2">
-                              <p><strong className="text-white">Sem AppID:</strong> Irá finalizar (parar) todos os jogos que estão sendo rodados no momento.</p>
+                              <p><strong className="text-white">Sem AppID:</strong> Deixe o campo vazio e aperte em "Farm" (ou aperte em "Stop") para parar todos os AppIDs que estão rodando.</p>
                               <p><strong className="text-white">1 AppID:</strong> Irá rodar um único jogo escolhido. (Ex: 730)</p>
-                              <p><strong className="text-white">Múltiplos AppIDs:</strong> Irá rodar múltiplos jogos ao mesmo tempo. (Ex: 730, 570, 440, 578080 - CS:GO, Dota 2, TF2, PUBG)</p>
+                              <p><strong className="text-white">Múltiplos AppIDs:</strong> Irá rodar múltiplos jogos ao mesmo tempo. (Ex: 730, 570, 440, 578080)</p>
                             </div>
                           )}
                         </div>
@@ -926,9 +926,9 @@ function AppContent() {
                           </button>
                           {showTagsHelp && (
                             <div className="mt-2 p-3 bg-[#161b22] border border-[#30363d] rounded text-xs text-[#8b949e] space-y-2">
-                              <p><strong className="text-white">Sem AppID:</strong> Irá finalizar (parar) todos os jogos que estão sendo rodados no momento.</p>
+                              <p><strong className="text-white">Sem AppID:</strong> Deixe o campo vazio e aperte em "Farm" (ou aperte em "Stop") para parar todos os AppIDs que estão rodando.</p>
                               <p><strong className="text-white">1 AppID:</strong> Irá rodar um único jogo escolhido. (Ex: 730)</p>
-                              <p><strong className="text-white">Múltiplos AppIDs:</strong> Irá rodar múltiplos jogos ao mesmo tempo. (Ex: 730, 570, 440, 578080 - CS:GO, Dota 2, TF2, PUBG)</p>
+                              <p><strong className="text-white">Múltiplos AppIDs:</strong> Irá rodar múltiplos jogos ao mesmo tempo. (Ex: 730, 570, 440, 578080)</p>
                             </div>
                           )}
                         </div>
