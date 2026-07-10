@@ -87,14 +87,14 @@ class SteamBotSession {
 
     public startCheckTimer() {
       if (this.checkTimeoutId) clearTimeout(this.checkTimeoutId);
+      if (this.botState.isPausedForPlaying || this.botState.isManualPaused) {
+        this.botState.nextCheckTime = 0;
+        return;
+      }
       const interval = 15 * 60 * 1000;
       this.botState.nextCheckTime = Date.now() + interval;
       this.checkTimeoutId = setTimeout(() => {
         if (!this.botState.isClientLoggedIn) {
-          this.startCheckTimer();
-          return;
-        }
-        if (this.botState.isPausedForPlaying || this.botState.isManualPaused) {
           this.startCheckTimer();
           return;
         }
@@ -400,12 +400,16 @@ app.post('/api/farm-stop', (req, res) => {
       session.addLog(`Farm parado para o jogo ${appId}. Farmando os demais...`);
     } else {
       session.botState.isManualPaused = true;
+      if (session.checkTimeoutId) clearTimeout(session.checkTimeoutId);
+      session.botState.nextCheckTime = 0;
       session.client.gamesPlayed([]);
       session.botState.currentFarm = 'Pausado Manualmente';
       session.addLog(`Farm parado para o jogo ${appId}. Nenhum outro jogo na lista.`);
     }
   } else {
     session.botState.isManualPaused = true;
+    if (session.checkTimeoutId) clearTimeout(session.checkTimeoutId);
+    session.botState.nextCheckTime = 0;
     session.client.gamesPlayed([]);
     session.botState.currentFarm = 'Pausado Manualmente';
     session.botState.activeAppIds = [];
@@ -441,6 +445,8 @@ app.post('/api/farm-manual', (req, res) => {
   
   if (appIds.length > 0 && session.botState.isClientLoggedIn) {
     session.botState.isManualPaused = true;
+    if (session.checkTimeoutId) clearTimeout(session.checkTimeoutId);
+    session.botState.nextCheckTime = 0;
     session.client.gamesPlayed(appIds);
     session.botState.currentFarm = `${appIds.length} jogo(s) manual(is) (${appIds.join(', ')})`;
     session.botState.activeAppIds = appIds;
