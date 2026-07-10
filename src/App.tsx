@@ -593,7 +593,7 @@ function AppContent() {
                 <div className="p-4 flex gap-3 flex-wrap">
                   {status?.activeAppIds && status.activeAppIds.length > 0 ? (
                     status.activeAppIds.map((id: number) => (
-                      <div key={id} className="flex flex-col items-center gap-1.5 p-2 bg-[#0d1117] border border-[#30363d] rounded shrink-0 relative">
+                      <div key={id} className={`flex flex-col items-center gap-1.5 p-2 rounded shrink-0 relative border ${status?.isManualPaused ? "border-orange-500/50 bg-orange-500/5" : "border-green-500/50 bg-green-500/5"}`}>
                         <a href={`https://store.steampowered.com/app/${id}`} target="_blank" rel="noreferrer" className="flex flex-col items-center gap-1 group">
                           <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${id}/capsule_sm_120.jpg`} alt={`App ${id}`} className="w-24 h-9 object-cover rounded border border-[#21262d] group-hover:border-[#58a6ff] transition-colors" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                           <span className="text-[10px] font-mono text-[#c9d1d9] font-bold">{id}</span>
@@ -772,7 +772,7 @@ function AppContent() {
                           />
                           <button 
                             onClick={handleManualFarm}
-                            disabled={loading}
+                            disabled={loading || !manualAppId}
                             className="px-4 py-2 bg-[#1f6feb] hover:bg-[#388bfd] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer disabled:opacity-50"
                           >
                             Farm
@@ -793,7 +793,7 @@ function AppContent() {
                           </button>
                           {showTagsHelp && (
                             <div className="mt-2 p-3 bg-[#161b22] border border-[#30363d] rounded text-xs text-[#8b949e] space-y-2">
-                              <p><strong className="text-white">Sem AppID:</strong> Deixe o campo vazio e aperte em "Farm" (ou aperte em "Stop") para parar todos os AppIDs que estão rodando.</p>
+                              <p><strong className="text-white">Para parar de rodar:</strong> Aperte o botão "Stop" para parar todos os AppIDs que estão rodando.</p>
                               <p><strong className="text-white">1 AppID:</strong> Irá rodar um único jogo escolhido. (Ex: 730)</p>
                               <p><strong className="text-white">Múltiplos AppIDs:</strong> Irá rodar múltiplos jogos ao mesmo tempo. (Ex: 730, 570, 440, 578080)</p>
                             </div>
@@ -905,7 +905,7 @@ function AppContent() {
                           />
                           <button 
                             onClick={handleManualFarm}
-                            disabled={loading}
+                            disabled={loading || !manualAppId}
                             className="px-4 py-2 bg-[#1f6feb] hover:bg-[#388bfd] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer disabled:opacity-50"
                           >
                             Farm
@@ -926,7 +926,7 @@ function AppContent() {
                           </button>
                           {showTagsHelp && (
                             <div className="mt-2 p-3 bg-[#161b22] border border-[#30363d] rounded text-xs text-[#8b949e] space-y-2">
-                              <p><strong className="text-white">Sem AppID:</strong> Deixe o campo vazio e aperte em "Farm" (ou aperte em "Stop") para parar todos os AppIDs que estão rodando.</p>
+                              <p><strong className="text-white">Para parar de rodar:</strong> Aperte o botão "Stop" para parar todos os AppIDs que estão rodando.</p>
                               <p><strong className="text-white">1 AppID:</strong> Irá rodar um único jogo escolhido. (Ex: 730)</p>
                               <p><strong className="text-white">Múltiplos AppIDs:</strong> Irá rodar múltiplos jogos ao mesmo tempo. (Ex: 730, 570, 440, 578080)</p>
                             </div>

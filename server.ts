@@ -437,15 +437,6 @@ app.post('/api/farm-manual', (req, res) => {
     return res.status(400).json({ error: 'O farming está pausado porque você está jogando em outro dispositivo. Feche o jogo primeiro.' });
   }
 
-  if (appId.trim() === '') {
-    session.botState.isManualPaused = true;
-    session.client.gamesPlayed([]);
-    session.botState.currentFarm = 'Nenhum';
-    session.botState.activeAppIds = [];
-    session.addLog('Todos os jogos foram finalizados (parados manualmente).');
-    return res.json({ success: true });
-  }
-
   const appIds = appId.split(',').map((id: string) => parseInt(id.trim(), 10)).filter((id: number) => !isNaN(id));
   
   if (appIds.length > 0 && session.botState.isClientLoggedIn) {
