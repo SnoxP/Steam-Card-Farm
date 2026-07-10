@@ -7,6 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { ShieldAlert, Menu, X } from 'lucide-react';
 import AdminPage from './components/AdminPage';
+import TutorialPage from './components/TutorialPage';
 
 function getSessionId() {
   let sid = localStorage.getItem('app_session_id');
@@ -830,6 +831,12 @@ function AppContent() {
                         >
                           Submit Code
                         </button>
+                        <Link 
+                          to="/tutorial"
+                          className="w-full mt-2 py-2 bg-transparent hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-xs font-bold transition-colors shadow-sm uppercase flex justify-center items-center cursor-pointer"
+                        >
+                          Não sei o que fazer (Ajuda)
+                        </Link>
                       </div>
                     )}
                     {status?.isClientLoggedIn ? (
@@ -927,6 +934,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/tutorial" element={<TutorialPage />} />
         <Route path="*" element={<AppContent />} />
       </Routes>
     </BrowserRouter>
