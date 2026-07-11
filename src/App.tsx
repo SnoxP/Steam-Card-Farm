@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { ShieldAlert, Menu, X, HelpCircle } from 'lucide-react';
+import { ShieldAlert, Menu, X, HelpCircle, LayoutDashboard, Layers, Package, Activity, Terminal, Link as LinkIcon, Code, TrendingUp, Plus, Gamepad2, CheckCircle2 } from 'lucide-react';
 import AdminPage from './components/AdminPage';
 import TutorialPage from './components/TutorialPage';
 
@@ -135,6 +135,14 @@ const t = {
   }
 };
 
+
+const GlobeIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <line x1="2" y1="12" x2="22" y2="12"></line>
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+  </svg>
+);
 function AppContent() {
   const [accountName, setAccountName] = useState('');
   const [password, setPassword] = useState('');
@@ -365,550 +373,525 @@ function AppContent() {
   const isRestantesTab = location.pathname === '/cartas-restantes';
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-[#0d1117] text-[#c9d1d9] font-sans">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between px-3 sm:px-4 py-3 sm:py-2 border-b border-[#30363d] bg-[#161b22] shrink-0 gap-3 sm:gap-0 sticky top-0 z-50">
-        <div className="flex items-center justify-between w-full sm:w-auto">
-          <div className="flex items-center gap-3">
-            <img src="https://i.ibb.co/vxg3Rhq1/image-removebg-preview.png" alt="CardHarvester" className="h-10 sm:h-12 object-contain" />
-            
-            <div className="flex flex-col justify-center -ml-1">
-              <div className="flex items-center text-2xl sm:text-[28px] font-black tracking-tighter italic leading-none" style={{ transform: 'skewX(-10deg)' }}>
-                <span className="text-white drop-shadow-sm">CARD</span>
-                <span className="text-[#6fc627] drop-shadow-sm">HARVESTER</span>
-              </div>
-              <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold tracking-[0.18em] uppercase mt-0.5 ml-1">Steam Card Farmer</span>
+    <div className="flex flex-col min-h-screen w-full bg-[#080b0e] text-[#8b949e] font-sans selection:bg-green-500/30">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 bg-[#080b0e] border-b border-[#1d2630] shrink-0 sticky top-0 z-50">
+        <div className="flex items-center gap-3">
+          <img src="https://i.ibb.co/vxg3Rhq1/image-removebg-preview.png" alt="CardHarvester" className="h-10 object-contain drop-shadow-[0_0_8px_rgba(34,197,94,0.3)]" />
+          <div className="flex flex-col -ml-1">
+            <div className="flex items-center text-2xl font-black tracking-tighter italic leading-none" style={{ transform: 'skewX(-10deg)' }}>
+              <span className="text-white">CARD</span>
+              <span className="text-[#6fc627]">HARVESTER</span>
             </div>
+            <span className="text-[9px] text-[#6fc627] font-bold tracking-[0.18em] uppercase mt-0.5 ml-1">Steam Card Farmer</span>
           </div>
-          
+        </div>
+        <div className="flex items-center mt-3 sm:mt-0">
+          <div className="px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-400 rounded-full flex items-center gap-2 text-xs font-bold tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+            {status?.isClientLoggedIn ? 'ACTIVE' : 'OFFLINE'}
+          </div>
           <button 
-            className="md:hidden p-2 text-[#8b949e] hover:text-white"
+            className="ml-4 md:hidden p-2 text-[#8b949e] hover:text-white"
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
           >
-            {isMobileSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMobileSidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
-        </div>
-        
-        <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 text-[10px] sm:text-xs uppercase tracking-wider font-mono">
-          <div className="px-2 sm:px-3 py-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded">
-            {status?.isClientLoggedIn ? 'Active' : 'Offline'}
-          </div>
         </div>
       </header>
       
-      <main className="flex flex-col md:flex-row flex-1 relative items-start">
-        {/* Mobile Overlay */}
+      <main className="flex flex-col md:flex-row flex-1 relative items-start overflow-hidden h-[calc(100vh-65px)]">
         {isMobileSidebarOpen && (
           <div 
-            className="md:hidden fixed inset-0 bg-black/50 z-40"
+            className="md:hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
             onClick={() => setIsMobileSidebarOpen(false)}
           />
         )}
         
         <aside className={`
-          fixed md:relative z-50 h-[calc(100vh-100px)] md:h-auto 
-          w-64 border-r border-[#30363d] bg-[#0d1117] flex-col shrink-0
+          fixed md:relative z-50 h-full w-64 border-r border-[#1d2630] bg-[#0b1016] flex-col shrink-0
           transition-transform duration-200 ease-in-out
           ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-          md:flex
+          flex
         `}>
-          <nav className="p-2 space-y-1">
-            <div className="text-[10px] uppercase font-bold text-[#8b949e] px-3 mb-2">{t[lang].management}</div>
-            <Link onClick={() => setIsMobileSidebarOpen(false)} to="/dashboard" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${!isCollectedTab && !isRestantesTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
-              <span>{t[lang].dashboard}</span>
-            </Link>
-            <Link onClick={() => setIsMobileSidebarOpen(false)} to="/cartas-restantes" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${isRestantesTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
-              <span>{t[lang].remainingCards}</span>
-            </Link>
-                        <Link onClick={() => setIsMobileSidebarOpen(false)} to="/cartas-coletadas" className={`flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors ${isCollectedTab ? 'bg-[#1f6feb] text-white' : 'text-[#8b949e] hover:bg-[#161b22]'}`}>
-              <span>{t[lang].collectedCards}</span>
-            </Link>
+          <div className="flex-1 overflow-y-auto p-3 space-y-6">
+            <div>
+              <div className="text-[10px] uppercase font-bold text-[#8b949e] px-3 mb-2 tracking-wider flex items-center justify-between">
+                <span>{t[lang].management}</span>
+                <span className="text-xs">^</span>
+              </div>
+              <div className="space-y-1">
+                <Link onClick={() => setIsMobileSidebarOpen(false)} to="/dashboard" className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-bold transition-colors ${!isCollectedTab && !isRestantesTab ? 'bg-[#15231a] text-[#22c55e] border border-[#22c55e]/30 shadow-[inset_0_0_12px_rgba(34,197,94,0.1)]' : 'text-[#8b949e] hover:bg-[#121820]'}`}>
+                  <LayoutDashboard size={18} />
+                  <span>{t[lang].dashboard}</span>
+                </Link>
+                <Link onClick={() => setIsMobileSidebarOpen(false)} to="/cartas-restantes" className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-bold transition-colors ${isRestantesTab ? 'bg-[#15231a] text-[#22c55e] border border-[#22c55e]/30' : 'text-[#8b949e] hover:bg-[#121820]'}`}>
+                  <Layers size={18} />
+                  <span>{t[lang].remainingCards}</span>
+                </Link>
+                <Link onClick={() => setIsMobileSidebarOpen(false)} to="/cartas-coletadas" className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-bold transition-colors ${isCollectedTab ? 'bg-[#15231a] text-[#22c55e] border border-[#22c55e]/30' : 'text-[#8b949e] hover:bg-[#121820]'}`}>
+                  <Package size={18} />
+                  <span>{t[lang].collectedCards}</span>
+                </Link>
+              </div>
+            </div>
+
             {status?.isAdmin && (
-              <Link onClick={() => setIsMobileSidebarOpen(false)} to="/admin" className="flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors text-amber-500 hover:bg-[#161b22]">
-                <ShieldAlert size={16} />
-                <span>ADMIN</span>
-              </Link>
+              <div>
+                <Link onClick={() => setIsMobileSidebarOpen(false)} to="/admin" className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-bold transition-colors text-amber-500 hover:bg-[#15231a] border border-transparent hover:border-amber-500/30">
+                  <ShieldAlert size={18} />
+                  <span>ADMIN</span>
+                </Link>
+              </div>
             )}
             
-            <div className="pt-4 pb-2">
-              <div className="text-[10px] uppercase font-bold text-[#8b949e] px-3 mb-2">{t[lang].language}</div>
-              <button onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')} className="flex items-center justify-between gap-3 px-3 py-2 w-full text-left rounded text-sm font-medium transition-colors text-[#8b949e] hover:bg-[#161b22]">
-                <span>{lang === 'pt' ? '🇧🇷 Português' : '🇺🇸 English'}</span>
-                <span className="text-[10px] bg-[#30363d] px-1.5 py-0.5 rounded text-white font-bold">{lang.toUpperCase()}</span>
+            <div>
+              <div className="text-[10px] uppercase font-bold text-[#8b949e] px-3 mb-2 tracking-wider">{t[lang].language}</div>
+              <button onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')} className="flex items-center justify-between gap-3 px-3 py-2.5 w-full text-left rounded-md text-sm font-bold transition-colors text-[#8b949e] hover:bg-[#121820]">
+                <div className="flex items-center gap-3">
+                  <GlobeIcon />
+                  <span>{lang === 'pt' ? 'Português' : 'English'}</span>
+                </div>
+                <span className="text-[10px] bg-[#1d2630] text-white px-2 py-0.5 rounded-md font-bold">{lang.toUpperCase()}</span>
               </button>
             </div>
 
-          </nav>
-          
-          {status?.avatar && (
-            <div className="mt-auto p-4 border-t border-[#30363d] bg-[#161b22]/50 font-mono text-[10px]">
-              <div className="flex items-center gap-3">
-                <img src={status.avatar} alt="Avatar" className="w-8 h-8 rounded" />
-                <span>{status.username}</span>
-              </div>
-            </div>
-          )}
-        </aside>
-        
-        <section className="flex-1 flex flex-col p-2 sm:p-4 gap-2 sm:gap-4">
-          {isCollectedTab ? (
-            <div className="flex flex-col gap-4 flex-1 min-h-0">
-              <div className="bg-[#161b22] border border-[#30363d] p-4 rounded flex items-center justify-between shadow-sm shrink-0">
-                <div className="flex flex-col">
-                  <span className="text-[11px] text-[#8b949e] uppercase font-bold tracking-wider">{t[lang].totalRemaining}</span>
-                  <span className="text-3xl font-mono font-black text-amber-400">
-                    {status?.availableGamesToFarm?.reduce((acc: number, g: any) => acc + (g.drops || 0), 0) || 0}
-                  </span>
-                </div>
-              </div>
-
-              <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col flex-1">
-                <div className="px-4 py-3 border-b border-[#30363d] shrink-0 bg-[#21262d]/30">
-                  <h2 className="text-sm font-bold uppercase text-[#f0f6fc]">{t[lang].collectedCards} ({status?.collectedCardsDetails?.length || 0})</h2>
-                </div>
-                <div className="flex-1 p-4">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-                    {status?.collectedCardsDetails && status.collectedCardsDetails.length > 0 ? (
-                      <>
-                        {status.collectedCardsDetails.map((card: any, i: number) => (
-                          <div key={i} className="bg-[#0d1117] border border-[#30363d] rounded overflow-hidden flex flex-col hover:border-[#58a6ff]/50 transition-colors">
-                            <div className="h-28 sm:h-32 bg-[#21262d]/50 flex items-center justify-center p-2 relative">
-                              <img src={card.image} alt={card.title} className="max-w-full max-h-full object-contain drop-shadow-md" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                            </div>
-                            <div className="p-2 sm:p-3 flex flex-col gap-1 border-t border-[#30363d]">
-                              <span className="text-[10px] sm:text-xs font-bold text-[#c9d1d9] truncate" title={card.title}>{card.title}</span>
-                              <span className="text-[9px] sm:text-[10px] text-[#8b949e] font-mono">{t[lang].minPrice}: <span className="text-green-400 font-bold">{card.minPrice || 'N/A'}</span></span>
-                            </div>
-                          </div>
-                        ))}
-                        {placeholderCards.slice(0, Math.max(0, 36 - status.collectedCardsDetails.length)).map((_, i) => (
-                          <div key={`placeholder-${i}`} className="bg-[#0d1117]/30 border border-[#30363d]/50 rounded overflow-hidden flex flex-col items-center justify-center min-h-[128px] opacity-30">
-                            <span className="text-[#8b949e] font-mono text-xl">?</span>
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      <>
-                        {placeholderCards.map((_, i) => (
-                          <div key={`placeholder-empty-${i}`} className="bg-[#0d1117]/30 border border-[#30363d]/50 rounded overflow-hidden flex flex-col items-center justify-center min-h-[128px] opacity-30">
-                            <span className="text-[#8b949e] font-mono text-xl">?</span>
-                          </div>
-                        ))}
-                      </>
-                    )}
+            {status?.avatar && (
+              <div className="mt-4 pt-4 border-t border-[#1d2630] px-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <img src={status.avatar} alt="Avatar" className="w-10 h-10 rounded-md border border-[#1d2630]" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-white">{status.username}</span>
+                    {status.isAdmin && <span className="text-[10px] text-amber-500 font-bold tracking-wider">ADMIN</span>}
                   </div>
                 </div>
               </div>
-            </div>
-          ) : isRestantesTab ? (
-            <div className="flex flex-col gap-4 flex-1 min-h-0">
-              <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col flex-1">
-                <div className="px-4 py-3 border-b border-[#30363d] shrink-0 bg-[#21262d]/30 flex justify-between items-center">
-                  <h2 className="text-sm font-bold uppercase text-[#f0f6fc]">{t[lang].remainingCards} ({status?.availableGamesToFarm?.length || 0} {lang === 'pt' ? 'jogos' : 'games'})</h2>
-                  <span className="text-sm font-mono text-amber-400 bg-amber-500/10 px-3 py-1 rounded border border-amber-500/20 font-bold">
-                    Total: {status?.availableGamesToFarm?.reduce((acc: number, g: any) => acc + (g.drops || 0), 0) || 0} {lang === 'pt' ? 'cartas' : 'cards'}
-                  </span>
-                </div>
-                <div className="flex-1 p-4 space-y-2">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-                    {status?.availableGamesToFarm && status.availableGamesToFarm.length > 0 ? (
-                      <>
-                        {status.availableGamesToFarm.map((game: any) => (
-                          <div key={game.appId} className="flex flex-col p-3 rounded bg-[#0d1117] border border-[#30363d] hover:border-[#58a6ff]/50 transition-colors">
-                            <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${game.appId}/header.jpg`} alt={game.name} className="w-full h-24 object-cover rounded mb-3 border border-[#21262d]" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                            <div className="text-[10px] sm:text-xs text-[#c9d1d9] font-bold truncate mb-1" title={game.name}>{game.name || t[lang].unknownGame}</div>
-                            <div className="flex justify-between items-end mt-auto">
-                              <div className="text-[9px] sm:text-[10px] text-[#8b949e] font-mono">AppID: {game.appId}</div>
-                              <div className="text-[10px] text-[#58a6ff] font-bold bg-[#58a6ff]/10 px-2 py-0.5 rounded border border-[#58a6ff]/20">
-                                {game.drops} drop
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {placeholderCards.slice(0, Math.max(0, 36 - status.availableGamesToFarm.length)).map((_, i) => (
-                          <div key={`placeholder-${i}`} className="bg-[#0d1117]/30 border border-[#30363d]/50 rounded overflow-hidden flex flex-col items-center justify-center min-h-[140px] opacity-30">
-                            <span className="text-[#8b949e] font-mono text-xl">?</span>
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      <>
-                        {placeholderCards.map((_, i) => (
-                          <div key={`placeholder-empty-${i}`} className="bg-[#0d1117]/30 border border-[#30363d]/50 rounded overflow-hidden flex flex-col items-center justify-center min-h-[140px] opacity-30">
-                            <span className="text-[#8b949e] font-mono text-xl">?</span>
-                          </div>
-                        ))}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 shrink-0">
-                <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px]">
-                  <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">{t[lang].gamesOwned}</span>
-                  <span className="text-lg sm:text-2xl font-mono text-white">{status?.gamesOwned || 0}</span>
-                </div>
-
-
-            <Link to="/cartas-restantes" className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px] cursor-pointer hover:border-amber-500/50 hover:bg-[#1c2128] transition-colors">
-              <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">{t[lang].remainingCards}</span>
-              <span className="text-lg sm:text-2xl font-mono text-amber-400">
-                {status?.availableGamesToFarm?.reduce((acc: number, g: any) => acc + (g.drops || 0), 0) || 0}
-              </span>
-            </Link>
-
-            <Link to="/cartas-coletadas" className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px] cursor-pointer hover:border-blue-500/50 hover:bg-[#1c2128] transition-colors">
-              <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">{t[lang].collectedCards}</span>
-              <span className="text-lg sm:text-2xl font-mono text-green-400">{status?.cardsDropped || 0}</span>
-            </Link>
-
-            <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px]">
-              <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">{t[lang].currentFarm}</span>
-              <span className={`text-xs sm:text-sm font-mono truncate ${status?.currentFarm?.includes('Pausado') ? 'text-amber-500' : 'text-blue-400'}`}>{status?.currentFarm || 'None'}</span>
-            </div>
-
-            <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex items-center justify-between shadow-sm min-h-[70px] col-span-2 gap-4">
-              <div className="flex items-center gap-3 min-w-0">
-                {status?.avatar ? (
-                  <div className="relative shrink-0">
-                    <img src={status.avatar} alt="Avatar" className="w-10 h-10 rounded border border-[#30363d]" />
-                    <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border border-[#161b22] ${getPersonaDisplay(status?.personaStateString).bg}`}></span>
-                  </div>
-                ) : (
-                  <div className="w-10 h-10 bg-[#30363d] rounded flex items-center justify-center font-bold text-[#8b949e] shrink-0">
-                    ?
-                  </div>
-                )}
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[9px] text-[#8b949e] uppercase font-bold tracking-wider">{t[lang].steamProfile}</span>
-                  <span className="text-xs font-bold text-white truncate max-w-[150px]">{status?.username || 'Não conectado'}</span>
-                </div>
-              </div>
-              
-              <div className="flex flex-col items-end shrink-0">
-                <span className="text-[9px] text-[#8b949e] uppercase font-bold tracking-wider">{t[lang].steamStatus}</span>
-                <span className={`text-sm font-bold font-mono ${getPersonaDisplay(status?.personaStateString).color}`}>
-                  {getPersonaDisplay(status?.personaStateString).label}
-                </span>
-              </div>
-            </div>
+            )}
           </div>
           
-          <div className="flex-none md:flex-1 grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4 min-h-0">
-            <div className="lg:col-span-2 flex flex-col gap-2 sm:gap-4">
-              <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col shrink-0">
-                <div className="px-4 py-2 border-b border-[#30363d] flex justify-between items-center">
-                  <h2 className="text-xs font-bold uppercase text-[#f0f6fc]">{t[lang].activeSessions}</h2>
-                  {status?.isClientLoggedIn && status?.activeAppIds && status.activeAppIds.length > 0 && timeLeft !== null && !status?.isManualPaused && (
-                    <span className="text-[10px] font-mono text-green-400 bg-green-500/10 px-2.5 py-0.5 rounded border border-green-500/20 flex items-center gap-1.5 font-bold uppercase">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-                      {t[lang].nextCheck}: {formatTime(timeLeft)}
-                    </span>
-                  )}
+          <div className="p-4 border-t border-[#1d2630] bg-[#0b1016]">
+             <div className="w-full h-40 bg-[#0c1218] border border-[#1d2630] rounded-md relative overflow-hidden flex flex-col justify-center items-center">
+                <div className="absolute inset-0 bg-gradient-to-t from-green-500/10 to-transparent"></div>
+                <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                   {/* Decorative background lines */}
+                   <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#22c55e" strokeWidth="0.5"/>
+                        </pattern>
+                      </defs>
+                      <rect width="100%" height="100%" fill="url(#grid)" />
+                   </svg>
                 </div>
-                <div className="p-4 flex gap-3 flex-wrap">
-                  {status?.activeAppIds && status.activeAppIds.length > 0 ? (
-                    status.activeAppIds.map((id: number) => (
-                      <div key={id} className={`flex flex-col items-center gap-1.5 p-2 rounded shrink-0 relative border ${status?.isManualPaused ? "border-orange-500/50 bg-orange-500/5" : "border-green-500/50 bg-green-500/5"}`}>
-                        <a href={`https://store.steampowered.com/app/${id}`} target="_blank" rel="noreferrer" className="flex flex-col items-center gap-1 group">
-                          <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${id}/capsule_sm_120.jpg`} alt={`App ${id}`} className="w-24 h-9 object-cover rounded border border-[#21262d] group-hover:border-[#58a6ff] transition-colors" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                          <span className="text-[10px] font-mono text-[#c9d1d9] font-bold">{id}</span>
-                        </a>
-                        <button 
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleStopSingleApp(id);
-                          }}
-                          className="w-full px-2 py-0.5 bg-red-500/15 hover:bg-red-600 text-red-400 hover:text-white rounded text-[9px] font-bold transition-all uppercase cursor-pointer text-center"
-                        >
-                          Parar
-                        </button>
+                <div className="z-10 flex flex-col gap-1 items-start w-full px-6">
+                  <span className="text-[#22c55e] font-black text-sm tracking-widest">AUTOMATE.</span>
+                  <span className="text-[#22c55e] font-black text-sm tracking-widest">FARM.</span>
+                  <span className="text-[#22c55e] font-black text-sm tracking-widest">PROFIT.</span>
+                </div>
+             </div>
+             <div className="flex justify-between items-center mt-3 px-1 text-[10px] text-[#4b5563]">
+               <span>v1.0.1</span>
+               <button onClick={() => setIsMobileSidebarOpen(false)} className="hover:text-white transition-colors">&lt;&lt;</button>
+             </div>
+          </div>
+        </aside>
+        
+        <section className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#080b0e]">
+          {isCollectedTab || isRestantesTab ? (
+            /* Reusing the existing simple view for lists, but stylized */
+            <div className="bg-[#10151c] border border-[#1d2630] rounded-lg p-6 min-h-full">
+               <h2 className="text-lg font-bold text-white mb-6 uppercase tracking-wide">
+                 {isCollectedTab ? t[lang].collectedCards : t[lang].remainingCards}
+               </h2>
+               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                 {/* This just maps the current active tab contents using the same objects from the original code */}
+                 {isCollectedTab && status?.collectedCardsDetails?.map((card: any, i: number) => (
+                    <div key={i} className="bg-[#0b1016] border border-[#1d2630] rounded-md overflow-hidden flex flex-col hover:border-green-500/50 transition-colors">
+                      <div className="h-28 sm:h-32 bg-[#10151c] flex items-center justify-center p-2 relative">
+                        <img src={card.image} alt={card.title} className="max-w-full max-h-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                       </div>
-                    ))
-                  ) : (
-                    <span className="text-xs text-[#8b949e]">{t[lang].noActiveSessions}</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col flex-1">
-                <div className="flex border-b border-[#30363d] shrink-0 flex-wrap">
-                  <button 
-                    onClick={() => setActiveConsoleTab('console')}
-                    className={`flex-1 min-w-[80px] px-3 py-2 text-[10px] sm:text-xs font-bold uppercase transition-colors border-b-2 ${activeConsoleTab === 'console' ? 'border-[#58a6ff] text-[#f0f6fc]' : 'border-transparent text-[#8b949e] hover:text-[#c9d1d9]'}`}
-                  >
-                    Console
-                  </button>
-                  <button 
-                    onClick={() => setActiveConsoleTab('available')}
-                    className={`flex-1 min-w-[120px] px-3 py-2 text-[10px] sm:text-xs font-bold uppercase transition-colors border-b-2 ${activeConsoleTab === 'available' ? 'border-[#58a6ff] text-[#f0f6fc]' : 'border-transparent text-[#8b949e] hover:text-[#c9d1d9]'}`}
-                  >
-                    Cartas Disponíveis (Lista)
-                  </button>
-                  <button 
-                    onClick={() => setActiveConsoleTab('all')}
-                    className={`flex-1 min-w-[120px] px-3 py-2 text-[10px] sm:text-xs font-bold uppercase transition-colors border-b-2 ${activeConsoleTab === 'all' ? 'border-[#58a6ff] text-[#f0f6fc]' : 'border-transparent text-[#8b949e] hover:text-[#c9d1d9]'}`}
-                  >
-                    Todas as Insígnias
-                  </button>
-                </div>
-                
-                {activeConsoleTab === 'console' && (
-                  <div ref={consoleRef} className="flex-1 p-4 font-mono text-[12px] leading-relaxed text-[#d1d5db] overflow-y-auto h-[250px] min-h-[250px] max-h-[400px]">
-                    {logs.map((log: string, i: number) => (
-                      <div key={i} className={log.includes('[Erro') ? 'text-red-400' : log.includes('sucesso') ? 'text-green-400' : ''}>
-                        {log}
+                      <div className="p-3 border-t border-[#1d2630] flex flex-col">
+                        <span className="text-xs font-bold text-white truncate" title={card.title}>{card.title}</span>
+                        <span className="text-[10px] text-[#8b949e] font-mono mt-1">Price: <span className="text-green-400 font-bold">{card.minPrice || 'N/A'}</span></span>
                       </div>
-                    ))}
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="text-[#58a6ff]">{'>'}</span>
-                      <span className="animate-pulse">_</span>
                     </div>
-                  </div>
-                )}
-
-                {activeConsoleTab === 'available' && (
-                  <div className="flex-1 p-4 space-y-2">
-                    {status?.availableGamesToFarm && status.availableGamesToFarm.length > 0 ? (
-                      status.availableGamesToFarm.map((game: any) => (
-                        <div key={game.appId} className="flex items-center justify-between p-2 rounded bg-[#0d1117] border border-[#30363d]">
-                          <div className="flex items-center gap-3">
-                            <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${game.appId}/capsule_sm_120.jpg`} alt={game.name} className="w-12 h-5 object-cover rounded" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                            <div>
-                              <div className="text-xs text-[#c9d1d9] font-bold">{game.name || t[lang].unknownGame}</div>
-                              <div className="text-[10px] text-[#8b949e] font-mono">AppID: {game.appId}</div>
-                            </div>
-                          </div>
-                          <div className="text-xs text-[#58a6ff] font-bold">
-                            {game.drops} drop
-                          </div>
+                 ))}
+                 {isRestantesTab && status?.availableGamesToFarm?.map((game: any) => (
+                    <div key={game.appId} className="bg-[#0b1016] border border-[#1d2630] rounded-md overflow-hidden flex flex-col hover:border-green-500/50 transition-colors">
+                      <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${game.appId}/header.jpg`} alt={game.name} className="w-full h-24 object-cover border-b border-[#1d2630]" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      <div className="p-3 flex flex-col h-full justify-between gap-2">
+                        <span className="text-xs font-bold text-white line-clamp-2" title={game.name}>{game.name || t[lang].unknownGame}</span>
+                        <div className="flex justify-between items-end">
+                          <span className="text-[10px] text-[#8b949e] font-mono">{game.appId}</span>
+                          <span className="text-[10px] text-yellow-500 font-bold bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/20">{game.drops} drops</span>
                         </div>
-                      ))
-                    ) : (
-                      <div className="text-xs text-[#8b949e] text-center mt-4">
-                        {status?.isClientLoggedIn ? 'Nenhuma carta restante para dropar.' : 'Faça login para verificar as cartas.'}
                       </div>
-                    )}
-                  </div>
-                )}
-
-                {activeConsoleTab === 'all' && (
-                  <div className="flex-1 p-4 space-y-2">
-                    {status?.allBadges && status.allBadges.length > 0 ? (
-                      status.allBadges.map((game: any) => (
-                        <div key={game.appId} className="flex items-center justify-between p-2 rounded bg-[#0d1117] border border-[#30363d] gap-2">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${game.appId}/capsule_sm_120.jpg`} alt={game.name} className="w-12 h-5 object-cover rounded shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                            <div className="min-w-0">
-                              <div className="text-xs text-[#c9d1d9] font-bold truncate">{game.name || t[lang].unknownGame}</div>
-                              <div className="text-[10px] text-[#8b949e] font-mono truncate">AppID: {game.appId} | Texto: <span className="text-yellow-500/80 font-sans italic">"{game.text || 'Nenhum'}"</span></div>
-                            </div>
-                          </div>
-                          <div className={`text-xs font-bold shrink-0 ${game.drops > 0 ? 'text-[#58a6ff]' : 'text-[#8b949e]'}`}>
-                            {game.drops > 0 ? `${game.drops} ` + t[lang].drops : `0 ${t[lang].drops}`}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-xs text-[#8b949e] text-center mt-4">
-                        {status?.isClientLoggedIn ? 'Verificando insígnias...' : 'Faça login para ver a lista de insígnias.'}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                    </div>
+                 ))}
+                 {(!isCollectedTab && !status?.availableGamesToFarm?.length) && (!isRestantesTab && !status?.collectedCardsDetails?.length) && (
+                   <div className="col-span-full py-12 text-center text-[#8b949e] text-sm">
+                     {t[lang].waitingData}
+                   </div>
+                 )}
+               </div>
             </div>
-            
-            <div className="bg-[#161b22] border border-[#30363d] rounded flex flex-col flex-none md:flex-1">
-              <div className="px-3 sm:px-4 py-2 border-b border-[#30363d] bg-[#21262d]/30 shrink-0">
-                <h2 className="text-xs font-bold uppercase text-[#f0f6fc]">Account Link Configuration</h2>
-              </div>
+          ) : (
+            <div className="flex flex-col gap-6 max-w-[1600px] mx-auto">
               
-              <div className="p-3 sm:p-4 space-y-4">
-                {refreshToken && !status?.steamGuardRequired ? (
-                  <div className="space-y-4">
-                    <div className="bg-green-500/10 border border-green-500/30 p-3 rounded text-[11px] text-green-200 leading-normal">
-                      <p><strong>{t[lang].sessionSaved.split(":")[0]}:</strong> {t[lang].sessionSaved.split(":")[1]}</p>
+              {/* TOP STATS ROW */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                
+                <div className="bg-[#10151c] border border-[#1d2630] rounded-lg p-4 flex flex-col justify-between relative overflow-hidden group hover:border-[#22c55e]/50 transition-colors h-24">
+                  <div className="flex justify-between items-start z-10">
+                    <div className="flex items-center gap-2 text-[10px] text-[#8b949e] font-bold tracking-wider uppercase">
+                      <Gamepad2 size={14} className="text-[#22c55e]" />
+                      {t[lang].gamesOwned}
                     </div>
-                    {status?.isClientLoggedIn ? (
-                      <div className="space-y-3">
-                        <div className="flex gap-2">
-                          <button 
-                            onClick={handleTriggerAutoFarm}
-                            disabled={loading}
-                            className="flex-1 py-2 bg-[#238636] hover:bg-[#2ea043] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                          >{t[lang].triggerAutoFarm}</button>
-                          <button 
-                            onClick={handleStopFarm}
-                            disabled={loading}
-                            className="flex-1 py-2 bg-[#da3633] hover:bg-[#f85149] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                          >{t[lang].stopFarming}</button>
-                        </div>
-                        <button 
-                          onClick={handleLogout}
-                          disabled={loading}
-                          className="w-full py-2 bg-[#21262d] hover:bg-[#30363d] text-[#da3633] border border-[#30363d] rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                        >{t[lang].logoutClear}</button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={handleLoginWithToken}
-                          disabled={loading}
-                          className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                        >
-                          {loading ? '...' : t[lang].restoreSession}
-                        </button>
-                        <button 
-                          onClick={handleLogout}
-                          disabled={loading}
-                          className="flex-1 py-2 bg-[#da3633] hover:bg-[#f85149] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                        >
-                          Clear Token
-                        </button>
-                      </div>
-                    )}
-                    {status?.isClientLoggedIn && !status?.steamGuardRequired && (
-                      <div className="mt-4 pt-4 border-t border-[#30363d] space-y-2">
-                        <label className="text-[10px] text-[#8b949e] uppercase font-bold">{t[lang].manualFarm}</label>
-                        <div className="flex gap-2">
-                          <input 
-                            type="text" 
-                            value={manualAppId}
-                            onChange={(e) => setManualAppId(e.target.value)}
-                            placeholder="Ex: 730, 570, 440" 
-                            className="flex-1 bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono focus:border-blue-500 outline-none text-[#c9d1d9]" 
-                          />
-                          <button 
-                            onClick={handleManualFarm}
-                            disabled={loading || !manualAppId}
-                            className="px-4 py-2 bg-[#1f6feb] hover:bg-[#388bfd] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer disabled:opacity-50"
-                          >
-                            Farm
-                          </button>
-                          {status?.activeAppIds && status.activeAppIds.length > 0 && (
-                            <button 
-                              onClick={handleStopFarm}
-                              disabled={loading}
-                              className="px-4 py-2 bg-[#da3633] hover:bg-[#f85149] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                            >
-                              Stop
-                            </button>
-                          )}
-                        </div>
-                        <div className="mt-2">
-                          <button onClick={() => setShowTagsHelp(!showTagsHelp)} className="text-[#8b949e] hover:text-white transition-colors flex items-center gap-1 text-xs">
-                            <HelpCircle size={14} /> {t[lang].howToUseTags}
-                          </button>
-                          {showTagsHelp && (
-                            <div className="mt-2 p-3 bg-[#161b22] border border-[#30363d] rounded text-xs text-[#8b949e] space-y-2">
-                              <p><strong className="text-white">{t[lang].stopRunningTitle}</strong> {t[lang].stopRunningDesc}</p>
-                              <p><strong className="text-white">{t[lang].oneAppIdTitle}</strong> {t[lang].oneAppIdDesc}</p>
-                              <p><strong className="text-white">{t[lang].multiAppIdTitle}</strong> {t[lang].multiAppIdDesc}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
-                ) : (
-                  <>
-                    <div className="bg-yellow-500/10 border border-yellow-500/30 p-3 rounded text-[11px] text-yellow-200 leading-normal">
-                      <p><strong>Warning:</strong> {t[lang].warningRealFarming}</p>
+                  <div className="text-3xl font-mono text-white font-bold z-10">{status?.gamesOwned || 0}</div>
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-[#22c55e]"></div>
+                </div>
+
+                <div className="bg-[#10151c] border border-[#1d2630] rounded-lg p-4 flex flex-col justify-between relative overflow-hidden group hover:border-[#eab308]/50 transition-colors h-24">
+                  <div className="flex justify-between items-start z-10">
+                    <div className="flex items-center gap-2 text-[10px] text-[#8b949e] font-bold tracking-wider uppercase">
+                      <Layers size={14} className="text-[#eab308]" />
+                      {t[lang].remainingCards}
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-[#8b949e] uppercase font-bold">{t[lang].accountName}</label>
-                      <input 
-                        type="text" 
-                        value={accountName}
-                        onChange={(e) => setAccountName(e.target.value)}
-                        placeholder={t[lang].accountName}
-                        className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono focus:border-blue-500 outline-none text-[#c9d1d9]" 
-                      />
+                  </div>
+                  <div className="text-3xl font-mono text-white font-bold z-10">
+                    {status?.availableGamesToFarm?.reduce((acc: number, g: any) => acc + (g.drops || 0), 0) || 0}
+                  </div>
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-[#eab308]"></div>
+                </div>
+
+                <div className="bg-[#10151c] border border-[#1d2630] rounded-lg p-4 flex flex-col justify-between relative overflow-hidden group hover:border-[#22c55e]/50 transition-colors h-24">
+                  <div className="flex justify-between items-start z-10">
+                    <div className="flex items-center gap-2 text-[10px] text-[#8b949e] font-bold tracking-wider uppercase">
+                      <Package size={14} className="text-[#22c55e]" />
+                      {t[lang].collectedCards}
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-[#8b949e] uppercase font-bold">{t[lang].password}</label>
-                      <input 
-                        type="password" 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••" 
-                        className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono focus:border-blue-500 outline-none text-[#c9d1d9]" 
-                      />
-                    </div>
-                    {status?.steamGuardRequired && (
-                      <div className="space-y-1.5 p-3 border border-blue-500/50 bg-blue-500/10 rounded">
-                        <label className="text-[10px] text-blue-400 uppercase font-bold">{t[lang].steamGuardCode} ({status.steamGuardDomain})</label>
-                        <input 
-                          type="text" 
-                          value={steamGuardCode}
-                          onChange={(e) => setSteamGuardCode(e.target.value)}
-                          placeholder={t[lang].steamGuardCode} 
-                          className="w-full bg-[#0d1117] border border-blue-500/50 rounded px-3 py-2 text-xs font-mono focus:border-blue-500 outline-none text-[#c9d1d9]" 
-                        />
-                        <button 
-                          onClick={handleSteamGuard}
-                          disabled={loading || !steamGuardCode}
-                          className="w-full mt-2 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer disabled:opacity-50"
-                        >{t[lang].submitCode}</button>
-                        <div className="flex justify-center w-full mt-2">
-                          <Link 
-                            to="/tutorial"
-                            className="text-[10px] text-blue-400/80 hover:text-blue-400 transition-colors cursor-pointer"
-                          >{t[lang].tutorialHelp}</Link>
-                        </div>
-                      </div>
-                    )}
-                    {status?.isClientLoggedIn ? (
-                      <div className="space-y-3 mt-4">
-                        <div className="flex gap-2">
-                          <button 
-                            onClick={handleTriggerAutoFarm}
-                            disabled={loading}
-                            className="flex-1 py-2 bg-[#238636] hover:bg-[#2ea043] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                          >{t[lang].triggerAutoFarm}</button>
-                          <button 
-                            onClick={handleStopFarm}
-                            disabled={loading}
-                            className="flex-1 py-2 bg-[#da3633] hover:bg-[#f85149] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                          >{t[lang].stopFarming}</button>
-                        </div>
-                        <button 
-                          onClick={handleLogout}
-                          disabled={loading}
-                          className="w-full py-2 bg-[#21262d] hover:bg-[#30363d] text-[#da3633] border border-[#30363d] rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                        >{t[lang].logoutClear}</button>
+                  </div>
+                  <div className="text-3xl font-mono text-white font-bold z-10">{status?.cardsDropped || 0}</div>
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-[#22c55e]"></div>
+                </div>
+
+                <div className="bg-[#10151c] border border-[#1d2630] rounded-lg p-4 flex flex-col justify-center gap-1 relative overflow-hidden h-24">
+                  <div className="flex items-center gap-2 text-[10px] text-[#8b949e] font-bold tracking-wider uppercase">
+                    <Activity size={14} className="text-[#3b82f6]" />
+                    {t[lang].currentFarm}
+                  </div>
+                  <div className={`text-sm font-bold ${status?.currentFarm?.includes('Pausado') ? 'text-amber-500' : 'text-[#3b82f6]'} leading-tight line-clamp-2`}>
+                    {status?.currentFarm || 'None'}
+                  </div>
+                </div>
+
+                <div className="bg-[#10151c] border border-[#1d2630] rounded-lg p-4 flex items-center justify-between gap-3 h-24">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    {status?.avatar ? (
+                      <div className="relative shrink-0">
+                        <img src={status.avatar} alt="Avatar" className="w-10 h-10 rounded-md border border-[#1d2630]" />
+                        <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-[1.5px] border-[#10151c] ${getPersonaDisplay(status?.personaStateString).bg}`}></span>
                       </div>
                     ) : (
-                      <div className="flex gap-2 mt-4">
-                        <button 
-                          onClick={handleClientLogin}
-                          disabled={loading}
-                          className="flex-1 py-2 bg-[#238636] hover:bg-[#2ea043] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer disabled:opacity-50"
-                        >
-                          {loading ? '...' : t[lang].startAutoFarming}
-                        </button>
+                      <div className="w-10 h-10 bg-[#1d2630] rounded-md flex items-center justify-center font-bold text-[#8b949e] shrink-0">
+                        ?
+                      </div>
+                    )}
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[9px] text-[#8b949e] uppercase font-bold tracking-wider">{t[lang].steamProfile}</span>
+                      <span className="text-xs font-bold text-white truncate">{status?.username || 'Não conectado'}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end shrink-0 border-l border-[#1d2630] pl-3">
+                    <span className="text-[9px] text-[#8b949e] uppercase font-bold tracking-wider">{t[lang].steamStatus}</span>
+                    <span className={`text-xs font-bold ${getPersonaDisplay(status?.personaStateString).color}`}>
+                      {getPersonaDisplay(status?.personaStateString).label}
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* MAIN LAYOUT: 2 COLUMNS */}
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                
+                {/* LEFT COLUMN (Sessões & Console) */}
+                <div className="xl:col-span-2 flex flex-col gap-6">
+                  
+                  {/* SESSÕES DE FARM ATIVAS */}
+                  <div className="bg-[#10151c] border border-[#1d2630] rounded-lg overflow-hidden flex flex-col">
+                    <div className="px-5 py-4 border-b border-[#1d2630] flex justify-between items-center bg-[#0d1217]">
+                      <div className="flex items-center gap-2">
+                        <Activity size={16} className="text-[#22c55e]" />
+                        <h2 className="text-sm font-bold uppercase text-white tracking-wider">{t[lang].activeSessions}</h2>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {status?.activeAppIds && status.activeAppIds.length > 0 ? (
+                        status.activeAppIds.map((id: number) => (
+                          <div key={id} className="bg-[#0b1016] border border-[#1d2630] rounded-lg p-4 flex flex-col gap-4 relative">
+                            <div className="flex justify-between items-start">
+                              <div className="w-32 h-16 bg-gray-800 rounded overflow-hidden border border-[#1d2630]">
+                                <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${id}/header.jpg`} alt={`App ${id}`} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                              </div>
+                              <div className="px-2.5 py-1 bg-green-500/10 border border-green-500/20 text-green-400 text-[9px] font-bold uppercase rounded flex items-center gap-1.5">
+                                <Activity size={10} />
+                                EM EXECUÇÃO
+                              </div>
+                            </div>
+                            
+                            <div className="flex flex-col gap-1">
+                              <span className="text-lg font-bold text-white font-mono">{id}</span>
+                              <span className="text-xs text-[#8b949e]">{status?.allBadges?.find((b: any) => b.appId === id)?.name || status?.availableGamesToFarm?.find((g: any) => g.appId === id)?.name || t[lang].unknownGame}</span>
+                            </div>
+
+                            <div className="flex flex-col gap-1 text-[11px] text-[#8b949e] font-mono">
+                              <div>Iniciado em: <span className="text-white">{status?.farmingStartTime ? new Date(status.farmingStartTime).toLocaleTimeString() : "N/A"}</span></div>
+                              {timeLeft !== null && <div>Próxima checagem: <span className="text-green-400">{formatTime(timeLeft)}</span></div>}
+                            </div>
+                            
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleStopSingleApp(id);
+                              }}
+                              className="mt-2 w-full py-2.5 bg-gradient-to-b from-[#7f1d1d] to-[#450a0a] hover:from-[#991b1b] hover:to-[#7f1d1d] text-[#fca5a5] hover:text-white rounded text-xs font-bold transition-all border border-[#991b1b]/50 shadow-[0_0_10px_rgba(220,38,38,0.1)] uppercase"
+                            >
+                              PARAR
+                            </button>
+                          </div>
+                        ))
+                      ) : null}
+
+                      {/* Add New Session Card */}
+                      <div className="bg-[#0b1016] border border-dashed border-[#1d2630] hover:border-[#22c55e]/50 rounded-lg p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors group">
+                        <div className="w-12 h-12 flex items-center justify-center rounded-full border border-[#22c55e] text-[#22c55e] group-hover:bg-[#22c55e]/10 transition-colors">
+                          <Plus size={24} />
+                        </div>
+                        <div className="text-sm font-bold text-white tracking-wider">ADICIONAR NOVA SESSÃO</div>
+                        <div className="text-xs text-[#8b949e]">Inicie uma nova sessão de farm</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CONSOLE */}
+                  <div className="bg-[#10151c] border border-[#1d2630] rounded-lg overflow-hidden flex flex-col flex-1 min-h-[300px]">
+                    <div className="flex border-b border-[#1d2630] bg-[#0d1217]">
+                      <button 
+                        onClick={() => setActiveConsoleTab('console')}
+                        className={`flex-1 flex justify-center items-center gap-2 px-4 py-3 text-xs font-bold uppercase transition-colors border-b-2 ${activeConsoleTab === 'console' ? 'border-[#22c55e] text-white bg-[#15231a]/50' : 'border-transparent text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#121820]'}`}
+                      >
+                        <Terminal size={14} /> Console
+                      </button>
+                      <button 
+                        onClick={() => setActiveConsoleTab('available')}
+                        className={`flex-1 flex justify-center items-center gap-2 px-4 py-3 text-xs font-bold uppercase transition-colors border-b-2 ${activeConsoleTab === 'available' ? 'border-[#22c55e] text-white bg-[#15231a]/50' : 'border-transparent text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#121820]'}`}
+                      >
+                        <Package size={14} /> Cartas Disponíveis (Lista)
+                      </button>
+                      <button 
+                        onClick={() => setActiveConsoleTab('all')}
+                        className={`flex-1 flex justify-center items-center gap-2 px-4 py-3 text-xs font-bold uppercase transition-colors border-b-2 ${activeConsoleTab === 'all' ? 'border-[#22c55e] text-white bg-[#15231a]/50' : 'border-transparent text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#121820]'}`}
+                      >
+                        <ShieldAlert size={14} /> Todas as Insígnias
+                      </button>
+                    </div>
+                    
+                    {activeConsoleTab === 'console' && (
+                      <div ref={consoleRef} className="flex-1 p-5 font-mono text-[11px] leading-relaxed text-[#8b949e] overflow-y-auto bg-[#080b0e] shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
+                        {logs.map((log: string, i: number) => {
+                          let isSystem = log.includes('[System]') || log.includes('[Sytem]');
+                          let isError = log.includes('[Erro');
+                          return (
+                            <div key={i} className={`whitespace-pre-wrap mb-0.5 ${isError ? 'text-red-400' : 'text-[#8b949e]'}`}>
+                              {isSystem ? (
+                                <>
+                                  <span className="text-[#8b949e]">{log.split('] ')[0] + ']'}</span>{' '}
+                                  <span className="text-[#22c55e]">{log.split('] ')[1]?.split(' ')[0]}</span>{' '}
+                                  <span className="text-[#c9d1d9]">{log.substring(log.indexOf(log.split('] ')[1]?.split(' ')[1] || ''))}</span>
+                                </>
+                              ) : (
+                                log
+                              )}
+                            </div>
+                          );
+                        })}
+                        <div className="flex items-center gap-2 mt-3 text-[#3b82f6]">
+                          <span>{'>'}</span>
+                          <span className="animate-pulse font-black">_</span>
+                        </div>
                       </div>
                     )}
                     
-                    {status?.isClientLoggedIn && !status?.steamGuardRequired && (
-                      <div className="mt-4 pt-4 border-t border-[#30363d] space-y-2">
-                        <label className="text-[10px] text-[#8b949e] uppercase font-bold">{t[lang].manualFarm}</label>
+                    {activeConsoleTab === 'available' && (
+                      <div className="flex-1 p-4 space-y-2 overflow-y-auto bg-[#080b0e]">
+                        {status?.availableGamesToFarm && status.availableGamesToFarm.length > 0 ? (
+                          status.availableGamesToFarm.map((game: any) => (
+                            <div key={game.appId} className="flex items-center justify-between p-3 rounded-md bg-[#10151c] border border-[#1d2630]">
+                              <div className="flex items-center gap-3">
+                                <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${game.appId}/capsule_sm_120.jpg`} alt={game.name} className="w-14 h-6 object-cover rounded" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                <div>
+                                  <div className="text-xs text-white font-bold">{game.name || t[lang].unknownGame}</div>
+                                  <div className="text-[10px] text-[#8b949e] font-mono">AppID: {game.appId}</div>
+                                </div>
+                              </div>
+                              <div className="text-[11px] text-[#22c55e] font-bold bg-[#22c55e]/10 px-2 py-1 rounded border border-[#22c55e]/20">
+                                {game.drops} drops
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-sm text-[#8b949e] text-center mt-10">
+                            {status?.isClientLoggedIn ? 'Nenhuma carta restante para dropar.' : 'Faça login para verificar as cartas.'}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {activeConsoleTab === 'all' && (
+                      <div className="flex-1 p-4 space-y-2 overflow-y-auto bg-[#080b0e]">
+                        {status?.allBadges && status.allBadges.length > 0 ? (
+                          status.allBadges.map((game: any) => (
+                            <div key={game.appId} className="flex items-center justify-between p-3 rounded-md bg-[#10151c] border border-[#1d2630] gap-2">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${game.appId}/capsule_sm_120.jpg`} alt={game.name} className="w-14 h-6 object-cover rounded shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                <div className="min-w-0">
+                                  <div className="text-xs text-white font-bold truncate">{game.name || t[lang].unknownGame}</div>
+                                  <div className="text-[10px] text-[#8b949e] font-mono truncate">AppID: {game.appId} | Texto: <span className="text-yellow-500 font-sans italic">"{game.text || 'Nenhum'}"</span></div>
+                                </div>
+                              </div>
+                              <div className={`text-xs font-bold shrink-0 ${game.drops > 0 ? 'text-[#22c55e]' : 'text-[#8b949e]'}`}>
+                                {game.drops > 0 ? `${game.drops} ` + t[lang].drops : `0 ${t[lang].drops}`}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-sm text-[#8b949e] text-center mt-10">
+                            {status?.isClientLoggedIn ? 'Verificando insígnias...' : 'Faça login para ver a lista de insígnias.'}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* RIGHT COLUMN (Configs & Stats) */}
+                <div className="flex flex-col gap-6">
+                  
+                  {/* ACCOUNT LINK CONFIGURATION */}
+                  <div className="bg-[#10151c] border border-[#1d2630] rounded-lg overflow-hidden">
+                    <div className="px-5 py-4 border-b border-[#1d2630] bg-[#0d1217] flex items-center gap-2">
+                      <LinkIcon size={16} className="text-[#eab308]" />
+                      <h2 className="text-xs font-bold uppercase text-white tracking-wider">Account Link Configuration</h2>
+                    </div>
+                    <div className="p-5 space-y-4">
+                      {refreshToken && !status?.steamGuardRequired ? (
+                        <>
+                          <div className="bg-[#15231a] border border-[#22c55e]/30 p-4 rounded-md flex gap-3">
+                            <CheckCircle2 size={18} className="text-[#22c55e] shrink-0 mt-0.5" />
+                            <div className="flex flex-col">
+                              <span className="text-xs text-white font-bold">{t[lang].sessionSaved.split(":")[0]}:</span>
+                              <span className="text-[11px] text-[#22c55e] leading-relaxed mt-0.5">{t[lang].sessionSaved.split(":")[1]}</span>
+                            </div>
+                          </div>
+                          
+                          {status?.isClientLoggedIn ? (
+                            <div className="space-y-3 pt-2">
+                              <div className="flex gap-3">
+                                <button 
+                                  onClick={handleTriggerAutoFarm}
+                                  disabled={loading}
+                                  className="flex-1 py-3 bg-[#166534] hover:bg-[#15803d] text-white rounded-md text-xs font-bold transition-colors uppercase border border-[#22c55e]/30 flex justify-center items-center gap-2"
+                                >
+                                  <span className="text-[#4ade80]">▶</span> TRIGGER AUTO-FARM
+                                </button>
+                                <button 
+                                  onClick={handleStopFarm}
+                                  disabled={loading}
+                                  className="flex-1 py-3 bg-[#991b1b] hover:bg-[#b91c1c] text-white rounded-md text-xs font-bold transition-colors uppercase border border-[#f87171]/30 flex justify-center items-center gap-2"
+                                >
+                                  <span className="w-2.5 h-2.5 bg-white rounded-sm"></span> STOP FARMING
+                                </button>
+                              </div>
+                              <button 
+                                onClick={handleLogout}
+                                disabled={loading}
+                                className="w-full py-3 bg-[#080b0e] hover:bg-[#121820] text-red-500 border border-[#1d2630] rounded-md text-xs font-bold transition-colors flex justify-center items-center gap-2 uppercase"
+                              >
+                                <X size={16} /> LOGOUT & CLEAR SESSION
+                              </button>
+                            </div>
+                          ) : (
+                            <button 
+                              onClick={handleClientLogin}
+                              disabled={loading}
+                              className="w-full py-3 bg-[#166534] hover:bg-[#15803d] text-white rounded-md text-xs font-bold transition-colors uppercase border border-[#22c55e]/30"
+                            >
+                              {loading ? '...' : t[lang].startAutoFarming}
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        <div className="space-y-3">
+                          <input 
+                            type="text" 
+                            value={accountName}
+                            onChange={(e) => setAccountName(e.target.value)}
+                            placeholder={t[lang].accountName}
+                            className="w-full bg-[#080b0e] border border-[#1d2630] rounded-md px-4 py-3 text-xs font-mono focus:border-[#22c55e]/50 outline-none text-white transition-colors placeholder-[#4b5563]" 
+                          />
+                          <input 
+                            type="password" 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="••••••••" 
+                            className="w-full bg-[#080b0e] border border-[#1d2630] rounded-md px-4 py-3 text-xs font-mono focus:border-[#22c55e]/50 outline-none text-white transition-colors placeholder-[#4b5563]" 
+                          />
+                          {status?.steamGuardRequired && (
+                            <div className="p-4 border border-[#3b82f6]/30 bg-[#3b82f6]/10 rounded-md mt-2 space-y-3">
+                              <label className="text-xs text-[#3b82f6] font-bold uppercase block">{t[lang].steamGuardCode} ({status.steamGuardDomain})</label>
+                              <input 
+                                type="text" 
+                                value={steamGuardCode}
+                                onChange={(e) => setSteamGuardCode(e.target.value)}
+                                placeholder={t[lang].steamGuardCode} 
+                                className="w-full bg-[#080b0e] border border-[#3b82f6]/50 rounded-md px-4 py-3 text-xs font-mono focus:border-[#3b82f6] outline-none text-white transition-colors" 
+                              />
+                              <button 
+                                onClick={handleSteamGuard}
+                                disabled={loading || !steamGuardCode}
+                                className="w-full py-3 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-md text-xs font-bold transition-colors uppercase disabled:opacity-50"
+                              >{t[lang].submitCode}</button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* FARMING MANUAL (APPID) */}
+                  {status?.isClientLoggedIn && !status?.steamGuardRequired && (
+                    <div className="bg-[#10151c] border border-[#1d2630] rounded-lg overflow-hidden">
+                      <div className="px-5 py-4 border-b border-[#1d2630] bg-[#0d1217] flex items-center gap-2">
+                        <Code size={16} className="text-[#3b82f6]" />
+                        <h2 className="text-xs font-bold uppercase text-white tracking-wider">Farming Manual (AppID)</h2>
+                      </div>
+                      <div className="p-5 space-y-4">
                         <div className="flex gap-2">
                           <input 
                             type="text" 
                             value={manualAppId}
                             onChange={(e) => setManualAppId(e.target.value)}
                             placeholder="Ex: 730, 570, 440" 
-                            className="flex-1 bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono focus:border-blue-500 outline-none text-[#c9d1d9]" 
+                            className="flex-1 bg-[#080b0e] border border-[#1d2630] rounded-md px-4 py-3 text-xs font-mono focus:border-[#3b82f6]/50 outline-none text-white transition-colors placeholder-[#4b5563]" 
                           />
                           <button 
                             onClick={handleManualFarm}
                             disabled={loading || !manualAppId}
-                            className="px-4 py-2 bg-[#1f6feb] hover:bg-[#388bfd] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer disabled:opacity-50"
+                            className="px-6 py-3 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white border border-[#3b82f6]/30 rounded-md text-xs font-bold transition-colors uppercase disabled:opacity-50"
                           >
                             Farm
                           </button>
@@ -916,44 +899,37 @@ function AppContent() {
                             <button 
                               onClick={handleStopFarm}
                               disabled={loading}
-                              className="px-4 py-2 bg-[#da3633] hover:bg-[#f85149] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
+                              className="px-6 py-3 bg-[#7f1d1d] hover:bg-[#991b1b] text-white border border-[#f87171]/30 rounded-md text-xs font-bold transition-colors uppercase"
                             >
                               Stop
                             </button>
                           )}
                         </div>
-                        <div className="mt-2">
-                          <button onClick={() => setShowTagsHelp(!showTagsHelp)} className="text-[#8b949e] hover:text-white transition-colors flex items-center gap-1 text-xs">
+                        
+                        <div>
+                          <button onClick={() => setShowTagsHelp(!showTagsHelp)} className="text-[#8b949e] hover:text-white transition-colors flex items-center gap-1.5 text-xs">
                             <HelpCircle size={14} /> {t[lang].howToUseTags}
                           </button>
                           {showTagsHelp && (
-                            <div className="mt-2 p-3 bg-[#161b22] border border-[#30363d] rounded text-xs text-[#8b949e] space-y-2">
-                              <p><strong className="text-white">{t[lang].stopRunningTitle}</strong> {t[lang].stopRunningDesc}</p>
-                              <p><strong className="text-white">{t[lang].oneAppIdTitle}</strong> {t[lang].oneAppIdDesc}</p>
-                              <p><strong className="text-white">{t[lang].multiAppIdTitle}</strong> {t[lang].multiAppIdDesc}</p>
+                            <div className="mt-3 p-4 bg-[#080b0e] border border-[#1d2630] rounded-md text-xs text-[#8b949e] space-y-3">
+                              <p><strong className="text-white">{t[lang].stopRunningTitle}</strong> <br/> {t[lang].stopRunningDesc}</p>
+                              <p><strong className="text-white">{t[lang].oneAppIdTitle}</strong> <br/> {t[lang].oneAppIdDesc}</p>
+                              <p><strong className="text-white">{t[lang].multiAppIdTitle}</strong> <br/> {t[lang].multiAppIdDesc}</p>
                             </div>
                           )}
                         </div>
                       </div>
-                    )}
-                  </>
-                )}
+                    </div>
+                  )}
+
+                  
+
+                </div>
               </div>
             </div>
-          </div>
-            </>
           )}
         </section>
       </main>
-      
-      <footer className="bg-[#0d1117] border-t border-[#30363d] px-2 sm:px-4 py-2 flex flex-col sm:flex-row justify-between items-center text-[9px] sm:text-[11px] text-[#8b949e] font-mono shrink-0 gap-1 sm:gap-0">
-        <div className="flex items-center gap-2 text-center sm:text-left">
-
-        </div>
-        <div className="flex gap-3 sm:gap-4">
-          <span className="hidden sm:inline">v1.0.1</span>
-        </div>
-      </footer>
     </div>
   );
 }
