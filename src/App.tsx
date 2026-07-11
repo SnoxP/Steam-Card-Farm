@@ -163,6 +163,18 @@ function AppContent() {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   
   const consoleRef = useRef<HTMLDivElement>(null);
+  const manualFarmRef = useRef<HTMLDivElement>(null);
+  const [highlightManualFarm, setHighlightManualFarm] = useState(false);
+
+  const handleAddNewSession = () => {
+    setHighlightManualFarm(true);
+    if (manualFarmRef.current) {
+      manualFarmRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    setTimeout(() => {
+      setHighlightManualFarm(false);
+    }, 3000);
+  };
   const location = useLocation();
 
   const hasAttemptedAutoLogin = useRef(false);
@@ -667,7 +679,7 @@ function AppContent() {
                       ) : null}
 
                       {/* Add New Session Card */}
-                      <div className="bg-[#0b1016] border border-dashed border-[#1d2630] hover:border-[#22c55e]/50 rounded-lg p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors group">
+                      <div onClick={handleAddNewSession} className="bg-[#0b1016] border border-dashed border-[#1d2630] hover:border-[#22c55e]/50 rounded-lg p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors group">
                         <div className="w-12 h-12 flex items-center justify-center rounded-full border border-[#22c55e] text-[#22c55e] group-hover:bg-[#22c55e]/10 transition-colors">
                           <Plus size={24} />
                         </div>
@@ -850,6 +862,15 @@ function AppContent() {
                             placeholder="••••••••" 
                             className="w-full bg-[#080b0e] border border-[#1d2630] rounded-md px-4 py-3 text-xs font-mono focus:border-[#22c55e]/50 outline-none text-white transition-colors placeholder-[#4b5563]" 
                           />
+                          {!status?.steamGuardRequired && (
+                            <button 
+                              onClick={handleClientLogin}
+                              disabled={loading || !accountName || !password}
+                              className="w-full py-3 bg-[#166534] hover:bg-[#15803d] text-white rounded-md text-xs font-bold transition-colors uppercase border border-[#22c55e]/30 mt-2"
+                            >
+                              {loading ? '...' : (lang === 'pt' ? 'LOGIN & INICIAR AUTO-FARMING' : 'LOGIN & START AUTO-FARMING')}
+                            </button>
+                          )}
                           {status?.steamGuardRequired && (
                             <div className="p-4 border border-[#3b82f6]/30 bg-[#3b82f6]/10 rounded-md mt-2 space-y-3">
                               <label className="text-xs text-[#3b82f6] font-bold uppercase block">{t[lang].steamGuardCode} ({status.steamGuardDomain})</label>
@@ -874,7 +895,12 @@ function AppContent() {
 
                   {/* FARMING MANUAL (APPID) */}
                   {status?.isClientLoggedIn && !status?.steamGuardRequired && (
-                    <div className="bg-[#10151c] border border-[#1d2630] rounded-lg overflow-hidden">
+                  <div 
+                    ref={manualFarmRef}
+                    className={`bg-[#10151c] border rounded-lg overflow-hidden transition-all duration-1000 ${
+                      highlightManualFarm ? 'border-[#3b82f6] shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'border-[#1d2630]'
+                    }`}
+                  >
                       <div className="px-5 py-4 border-b border-[#1d2630] bg-[#0d1217] flex items-center gap-2">
                         <Code size={16} className="text-[#3b82f6]" />
                         <h2 className="text-xs font-bold uppercase text-white tracking-wider">Farming Manual (AppID)</h2>
