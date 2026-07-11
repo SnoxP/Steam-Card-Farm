@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity, Users, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { apiFetch } from '../utils/apiFetch';
 
 export default function AdminPage() {
   const [stats, setStats] = useState<any>(null);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    fetch('/api/admin/stats')
+    apiFetch('/api/admin/stats')
       .then(res => {
         if (!res.ok) {
           if (res.status === 403) throw new Error('Acesso negado. Apenas o administrador (SnoxP718) pode ver esta página.');
@@ -91,7 +92,7 @@ export default function AdminPage() {
                         <td className="px-4 py-3 text-right space-x-2">
                           <button
                             onClick={() => {
-                              fetch('/api/admin/update-user', {
+                              apiFetch('/api/admin/update-user', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ steamId: user.steamId, isAdmin: !user.isAdmin })
@@ -104,7 +105,7 @@ export default function AdminPage() {
                           </button>
                           <button
                             onClick={() => {
-                              fetch('/api/admin/update-user', {
+                              apiFetch('/api/admin/update-user', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ steamId: user.steamId, isBanned: !user.isBanned })

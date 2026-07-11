@@ -9,25 +9,7 @@ import { ShieldAlert, Menu, X, HelpCircle } from 'lucide-react';
 import AdminPage from './components/AdminPage';
 import TutorialPage from './components/TutorialPage';
 
-function getSessionId() {
-  let sid = localStorage.getItem('app_session_id');
-  if (!sid) {
-    sid = Math.random().toString(36).substring(2, 15);
-    localStorage.setItem('app_session_id', sid);
-  }
-  return sid;
-}
-
-const originalFetch = window.fetch;
-window.fetch = async function() {
-  let [resource, config] = arguments;
-  if (!config) config = {};
-  if (!config.headers) config.headers = {};
-  if (typeof resource === 'string' && resource.startsWith('/api/')) {
-    config.headers['x-session-id'] = getSessionId();
-  }
-  return originalFetch.call(window, resource, config);
-};
+import { getSessionId, safeGetItem, safeSetItem, safeRemoveItem, apiFetch } from './utils/apiFetch';
 
 
 const t = {
@@ -159,12 +141,12 @@ function AppContent() {
   const [steamGuardCode, setSteamGuardCode] = useState('');
   const [manualAppId, setManualAppId] = useState('');
   const [showTagsHelp, setShowTagsHelp] = useState(false);
-  const [refreshToken, setRefreshToken] = useState(localStorage.getItem('steam_refresh_token') || '');
+  const [refreshToken, setRefreshToken] = useState(safeGetItem('steam_refresh_token') || '');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
-    const [lang, setLang] = useState<'pt' | 'en'>(localStorage.getItem('lang') === 'en' ? 'en' : 'pt');
+    const [lang, setLang] = useState<'pt' | 'en'>(safeGetItem('lang') === 'en' ? 'en' : 'pt');
   useEffect(() => {
-    localStorage.setItem('lang', lang);
+    safeSetItem('lang', lang);
   }, [lang]);
   const [status, setStatus] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -179,24 +161,24 @@ function AppContent() {
 
   const fetchStatus = async () => {
     try {
-      const res = await fetch('/api/status');
+      const res = await apiFetch('/api/status');
       const data = await res.json();
       setStatus(data);
       
       // Auto-login logic: if backend is offline, we have a token, and haven't tried yet
       if (!data.isClientLoggedIn && !data.steamGuardRequired && !hasAttemptedAutoLogin.current) {
-        const storedToken = localStorage.getItem('steam_refresh_token');
+        const storedToken = safeGetItem('steam_refresh_token');
         if (storedToken && storedToken !== '') {
           hasAttemptedAutoLogin.current = true;
           setLoading(true);
           try {
-            await fetch('/api/login-client', {
+            await apiFetch('/api/login-client', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ refreshToken: storedToken })
             });
             // Fetch status again after triggering login
-            const resAfter = await fetch('/api/status');
+            const resAfter = await apiFetch('/api/status');
             const dataAfter = await resAfter.json();
             setStatus(dataAfter);
           } catch (e) {
@@ -247,7 +229,7 @@ function AppContent() {
     if (status) {
       if (status.refreshToken && status.refreshToken !== refreshToken) {
         setRefreshToken(status.refreshToken);
-        localStorage.setItem('steam_refresh_token', status.refreshToken);
+        safeSetItem('steam_refresh_token', status.refreshToken);
       } else if (status.refreshToken === '' && status.isClientLoggedIn === false && status.steamGuardRequired === false) {
         // We shouldn't clear the local token just because the server restarted and has empty token.
         // We will only clear it if we tried to auto-login and it failed, or on explicit logout.
@@ -258,7 +240,7 @@ function AppContent() {
   const handleClientLogin = async () => {
     setLoading(true);
     try {
-      await fetch('/api/login-client', {
+      await apiFetch('/api/login-client', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accountName, password })
@@ -273,7 +255,7 @@ function AppContent() {
   const handleSteamGuard = async () => {
     setLoading(true);
     try {
-      await fetch('/api/steam-guard', {
+      await apiFetch('/api/steam-guard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: steamGuardCode })
@@ -288,7 +270,7 @@ function AppContent() {
 
   const handleStopFarm = async () => {
     try {
-      await fetch('/api/farm-stop', { method: 'POST' });
+      await apiFetch('/api/farm-stop', { method: 'POST' });
       fetchStatus();
     } catch (e) {
       console.error(e);
@@ -297,7 +279,7 @@ function AppContent() {
 
   const handleStopSingleApp = async (appId: number) => {
     try {
-      await fetch('/api/farm-stop', {
+      await apiFetch('/api/farm-stop', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ appId })
@@ -311,7 +293,7 @@ function AppContent() {
   const handleManualFarm = async () => {
     setLoading(true);
     try {
-      await fetch('/api/farm-manual', {
+      await apiFetch('/api/farm-manual', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ appId: manualAppId })
@@ -327,9 +309,9 @@ function AppContent() {
   const handleLogout = async () => {
     setLoading(true);
     try {
-      await fetch('/api/logout', { method: 'POST' });
+      await apiFetch('/api/logout', { method: 'POST' });
       setRefreshToken('');
-      localStorage.removeItem('steam_refresh_token');
+      safeRemoveItem('steam_refresh_token');
       fetchStatus();
     } catch (e) {
       console.error(e);
@@ -340,7 +322,7 @@ function AppContent() {
   const handleLoginWithToken = async () => {
     setLoading(true);
     try {
-      await fetch('/api/login-client', {
+      await apiFetch('/api/login-client', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken })
@@ -355,7 +337,7 @@ function AppContent() {
   const handleTriggerAutoFarm = async () => {
     setLoading(true);
     try {
-      await fetch('/api/farm-auto', { method: 'POST' });
+      await apiFetch('/api/farm-auto', { method: 'POST' });
       fetchStatus();
     } catch (e) {
       console.error(e);
@@ -726,7 +708,7 @@ function AppContent() {
                             </div>
                           </div>
                           <div className={`text-xs font-bold shrink-0 ${game.drops > 0 ? 'text-[#58a6ff]' : 'text-[#8b949e]'}`}>
-                            {game.drops > 0 ? `${game.drops} drop$` : '0 {t[lang].drops}'}
+                            {game.drops > 0 ? `${game.drops} ` + t[lang].drops : `0 ${t[lang].drops}`}
                           </div>
                         </div>
                       ))
