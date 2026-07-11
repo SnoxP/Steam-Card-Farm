@@ -18,7 +18,7 @@ export default function TutorialPage() {
             <p className="text-sm leading-relaxed text-[#8b949e]">
               Abra o aplicativo do Steam no seu celular e faça login, se necessário.<br/>
               Toque no ícone de escudo (Steam Guard) localizado no menu inferior (é o ícone central).<br/>
-              Se o código não aparecer logo de cara ou se você precisar configurar/sincronizar, toque no ícone da engrenagem (Configurações) no canto superior direito dessa tela.
+              Se o código não aparecer logo de cara ou se você precisar configurar/sincronizar, toque no ícone da engrenagem (Configurações) no canto inferior direito dessa tela.
             </p>
             <div className="bg-[#161b22] border border-[#30363d] p-4 rounded-lg shadow-sm">
               <img 

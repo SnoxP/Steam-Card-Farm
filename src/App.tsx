@@ -33,6 +33,22 @@ window.fetch = async function() {
 const t = {
   pt: {
     management: "Gerenciamento",
+    currentFarm: "Farm Atual",
+    howToUseTags: "Como usar as tags de AppID?",
+    stopRunningTitle: "Para parar de rodar:",
+    stopRunningDesc: 'Aperte o botão "Stop" para parar todos os AppIDs que estão rodando.',
+    oneAppIdTitle: "1 AppID:",
+    oneAppIdDesc: "Irá rodar um único jogo escolhido. (Ex: 730)",
+    multiAppIdTitle: "Múltiplos AppIDs:",
+    multiAppIdDesc: "Irá rodar múltiplos jogos ao mesmo tempo. (Ex: 730, 570, 440, 578080)",
+    statusOnline: "Disponível",
+    statusAway: "Ausente",
+    statusSnooze: "Inativo",
+    statusBusy: "Ocupado",
+    statusTrade: "Disponível para Trocas",
+    statusPlay: "Disponível para Jogar",
+    statusInvisible: "Invisível",
+    statusOffline: "Offline",
     dashboard: "Dashboard",
     remainingCards: "Cartas Restantes",
     collectedCards: "Cartas Coletadas",
@@ -71,10 +87,28 @@ const t = {
     gamesOwned: "Jogos (Total)",
     gamesWithDrops: "Jogos com Drops",
     noCardsYet: "Nenhuma carta coletada ainda nesta sessão.",
-    minPrice: "Menor preço"
+    minPrice: "Menor preço",
+    tutorialHelp: "Não sabe o que fazer? (Ajuda)",
+    sessionSaved: "Sessão Salva: Um token de sessão válido foi encontrado. Você pode continuar farmando sem digitar sua senha."
   },
   en: {
     management: "Management",
+    currentFarm: "Current Farm",
+    howToUseTags: "How to use AppID tags?",
+    stopRunningTitle: "To stop running:",
+    stopRunningDesc: 'Press the "Stop" button to stop all running AppIDs.',
+    oneAppIdTitle: "1 AppID:",
+    oneAppIdDesc: "Will run a single chosen game. (Ex: 730)",
+    multiAppIdTitle: "Multiple AppIDs:",
+    multiAppIdDesc: "Will run multiple games at the same time. (Ex: 730, 570, 440, 578080)",
+    statusOnline: "Online",
+    statusAway: "Away",
+    statusSnooze: "Snooze",
+    statusBusy: "Busy",
+    statusTrade: "Looking to Trade",
+    statusPlay: "Looking to Play",
+    statusInvisible: "Invisible",
+    statusOffline: "Offline",
     dashboard: "Dashboard",
     remainingCards: "Remaining Cards",
     collectedCards: "Collected Cards",
@@ -101,7 +135,7 @@ const t = {
     submitCode: "Submit Code",
     triggerAutoFarm: "Trigger Auto-Farm",
     stopFarming: "Stop Farming",
-    logoutClear: "Logout function AppContent() { Clear Session",
+    logoutClear: "Logout & Clear Session",
     startAutoFarming: "Start Auto-Farming",
     restoreSession: "Restore Session",
     clearToken: "Clear Token",
@@ -113,7 +147,9 @@ const t = {
     gamesOwned: "Games Owned",
     gamesWithDrops: "Games with Drops",
     noCardsYet: "No cards collected yet in this session.",
-    minPrice: "Min Price"
+    minPrice: "Min Price",
+    tutorialHelp: "Don't know what to do? (Help)",
+    sessionSaved: "Session Saved: A valid session token was found. You can continue farming without entering your password."
   }
 };
 
@@ -529,7 +565,7 @@ function AppContent() {
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 shrink-0">
                 <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px]">
-                  <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">Games Owned</span>
+                  <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">{t[lang].gamesOwned}</span>
                   <span className="text-lg sm:text-2xl font-mono text-white">{status?.gamesOwned || 0}</span>
                 </div>
 
@@ -547,7 +583,7 @@ function AppContent() {
             </Link>
 
             <div className="bg-[#161b22] border border-[#30363d] p-2 sm:p-3 rounded flex flex-col justify-between shadow-sm min-h-[70px]">
-              <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">Current Farm</span>
+              <span className="text-[9px] sm:text-[11px] text-[#8b949e] uppercase font-bold">{t[lang].currentFarm}</span>
               <span className={`text-xs sm:text-sm font-mono truncate ${status?.currentFarm?.includes('Pausado') ? 'text-amber-500' : 'text-blue-400'}`}>{status?.currentFarm || 'None'}</span>
             </div>
 
@@ -713,7 +749,7 @@ function AppContent() {
                 {refreshToken && !status?.steamGuardRequired ? (
                   <div className="space-y-4">
                     <div className="bg-green-500/10 border border-green-500/30 p-3 rounded text-[11px] text-green-200 leading-normal">
-                      <p><strong>Session Saved:</strong> A valid session token was found. You can continue farming without entering your password.</p>
+                      <p><strong>{t[lang].sessionSaved.split(":")[0]}:</strong> {t[lang].sessionSaved.split(":")[1]}</p>
                     </div>
                     {status?.isClientLoggedIn ? (
                       <div className="space-y-3">
@@ -722,24 +758,18 @@ function AppContent() {
                             onClick={handleTriggerAutoFarm}
                             disabled={loading}
                             className="flex-1 py-2 bg-[#238636] hover:bg-[#2ea043] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                          >
-                            Trigger Auto-Farm
-                          </button>
+                          >{t[lang].triggerAutoFarm}</button>
                           <button 
                             onClick={handleStopFarm}
                             disabled={loading}
                             className="flex-1 py-2 bg-[#da3633] hover:bg-[#f85149] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                          >
-                            Stop Farming
-                          </button>
+                          >{t[lang].stopFarming}</button>
                         </div>
                         <button 
                           onClick={handleLogout}
                           disabled={loading}
                           className="w-full py-2 bg-[#21262d] hover:bg-[#30363d] text-[#da3633] border border-[#30363d] rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                        >
-                          Logout & Clear Session
-                        </button>
+                        >{t[lang].logoutClear}</button>
                       </div>
                     ) : (
                       <div className="flex gap-2">
@@ -789,13 +819,13 @@ function AppContent() {
                         </div>
                         <div className="mt-2">
                           <button onClick={() => setShowTagsHelp(!showTagsHelp)} className="text-[#8b949e] hover:text-white transition-colors flex items-center gap-1 text-xs">
-                            <HelpCircle size={14} /> Como usar as tags de AppID?
+                            <HelpCircle size={14} /> {t[lang].howToUseTags}
                           </button>
                           {showTagsHelp && (
                             <div className="mt-2 p-3 bg-[#161b22] border border-[#30363d] rounded text-xs text-[#8b949e] space-y-2">
-                              <p><strong className="text-white">Para parar de rodar:</strong> Aperte o botão "Stop" para parar todos os AppIDs que estão rodando.</p>
-                              <p><strong className="text-white">1 AppID:</strong> Irá rodar um único jogo escolhido. (Ex: 730)</p>
-                              <p><strong className="text-white">Múltiplos AppIDs:</strong> Irá rodar múltiplos jogos ao mesmo tempo. (Ex: 730, 570, 440, 578080)</p>
+                              <p><strong className="text-white">{t[lang].stopRunningTitle}</strong> {t[lang].stopRunningDesc}</p>
+                              <p><strong className="text-white">{t[lang].oneAppIdTitle}</strong> {t[lang].oneAppIdDesc}</p>
+                              <p><strong className="text-white">{t[lang].multiAppIdTitle}</strong> {t[lang].multiAppIdDesc}</p>
                             </div>
                           )}
                         </div>
@@ -829,7 +859,7 @@ function AppContent() {
                     </div>
                     {status?.steamGuardRequired && (
                       <div className="space-y-1.5 p-3 border border-blue-500/50 bg-blue-500/10 rounded">
-                        <label className="text-[10px] text-blue-400 uppercase font-bold">Steam Guard Code ({status.steamGuardDomain})</label>
+                        <label className="text-[10px] text-blue-400 uppercase font-bold">{t[lang].steamGuardCode} ({status.steamGuardDomain})</label>
                         <input 
                           type="text" 
                           value={steamGuardCode}
@@ -841,16 +871,12 @@ function AppContent() {
                           onClick={handleSteamGuard}
                           disabled={loading || !steamGuardCode}
                           className="w-full mt-2 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer disabled:opacity-50"
-                        >
-                          Submit Code
-                        </button>
+                        >{t[lang].submitCode}</button>
                         <div className="flex justify-center w-full mt-2">
                           <Link 
                             to="/tutorial"
                             className="text-[10px] text-blue-400/80 hover:text-blue-400 transition-colors cursor-pointer"
-                          >
-                            Não sabe o que fazer? (Ajuda)
-                          </Link>
+                          >{t[lang].tutorialHelp}</Link>
                         </div>
                       </div>
                     )}
@@ -861,24 +887,18 @@ function AppContent() {
                             onClick={handleTriggerAutoFarm}
                             disabled={loading}
                             className="flex-1 py-2 bg-[#238636] hover:bg-[#2ea043] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                          >
-                            Trigger Auto-Farm
-                          </button>
+                          >{t[lang].triggerAutoFarm}</button>
                           <button 
                             onClick={handleStopFarm}
                             disabled={loading}
                             className="flex-1 py-2 bg-[#da3633] hover:bg-[#f85149] text-white rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                          >
-                            Stop Farming
-                          </button>
+                          >{t[lang].stopFarming}</button>
                         </div>
                         <button 
                           onClick={handleLogout}
                           disabled={loading}
                           className="w-full py-2 bg-[#21262d] hover:bg-[#30363d] text-[#da3633] border border-[#30363d] rounded text-xs font-bold transition-colors shadow-sm uppercase cursor-pointer"
-                        >
-                          Logout & Clear Session
-                        </button>
+                        >{t[lang].logoutClear}</button>
                       </div>
                     ) : (
                       <div className="flex gap-2 mt-4">
@@ -922,13 +942,13 @@ function AppContent() {
                         </div>
                         <div className="mt-2">
                           <button onClick={() => setShowTagsHelp(!showTagsHelp)} className="text-[#8b949e] hover:text-white transition-colors flex items-center gap-1 text-xs">
-                            <HelpCircle size={14} /> Como usar as tags de AppID?
+                            <HelpCircle size={14} /> {t[lang].howToUseTags}
                           </button>
                           {showTagsHelp && (
                             <div className="mt-2 p-3 bg-[#161b22] border border-[#30363d] rounded text-xs text-[#8b949e] space-y-2">
-                              <p><strong className="text-white">Para parar de rodar:</strong> Aperte o botão "Stop" para parar todos os AppIDs que estão rodando.</p>
-                              <p><strong className="text-white">1 AppID:</strong> Irá rodar um único jogo escolhido. (Ex: 730)</p>
-                              <p><strong className="text-white">Múltiplos AppIDs:</strong> Irá rodar múltiplos jogos ao mesmo tempo. (Ex: 730, 570, 440, 578080)</p>
+                              <p><strong className="text-white">{t[lang].stopRunningTitle}</strong> {t[lang].stopRunningDesc}</p>
+                              <p><strong className="text-white">{t[lang].oneAppIdTitle}</strong> {t[lang].oneAppIdDesc}</p>
+                              <p><strong className="text-white">{t[lang].multiAppIdTitle}</strong> {t[lang].multiAppIdDesc}</p>
                             </div>
                           )}
                         </div>
