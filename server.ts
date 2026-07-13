@@ -440,6 +440,7 @@ app.post('/api/farm-manual', (req, res) => {
     session.botState.isManualPaused = true;
     if (session.checkTimeoutId) clearTimeout(session.checkTimeoutId);
     session.botState.nextCheckTime = 0;
+    session.botState.farmingStartTime = Date.now();
     session.client.gamesPlayed(appIds);
     session.botState.currentFarm = `${appIds.length} jogo(s) manual(is) (${appIds.join(', ')})`;
     session.botState.activeAppIds = appIds;

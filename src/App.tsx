@@ -680,7 +680,7 @@ function AppContent() {
 
                             <div className="flex flex-col gap-1 text-[11px] text-[#8b949e] font-mono">
                               <div>Iniciado em: <span className="text-white">{status?.farmingStartTime ? new Date(status.farmingStartTime).toLocaleTimeString() : "N/A"}</span></div>
-                              {timeElapsed !== null && <div>Tempo rodado: <span className="text-white">{formatElapsed(timeElapsed)}</span></div>}
+                              <div>Tempo rodado: <span className="text-white">{timeElapsed !== null ? formatElapsed(timeElapsed) : "N/A"}</span></div>
                               {timeLeft !== null && <div>Próxima checagem: <span className="text-green-400">{formatTime(timeLeft)}</span></div>}
                             </div>
                             
