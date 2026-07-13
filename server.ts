@@ -348,7 +348,9 @@ app.post('/api/login-client', (req, res) => {
   if (!accountName && !refreshToken) {
     return res.status(400).json({ error: 'Conta ou Refresh Token necessários para conectar.' });
   }
-  const logOnOptions: any = {};
+  const logOnOptions: any = {
+    logonID: 144
+  };
   if (refreshToken) {
     session.addLog('Iniciando conexão CM via Refresh Token (Sessão Salva)...');
     logOnOptions.refreshToken = refreshToken;
