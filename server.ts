@@ -36,6 +36,7 @@ class SteamBotSession {
         refreshToken: '',
         activeAppIds: [] as number[],
         nextCheckTime: 0,
+        farmingStartTime: null as number | null,
         logs: ['[System] Inicializando servidor Steam...'],
         collectedCardsDetails: [] as { image: string, title: string, minPrice: string }[]
     };
@@ -147,10 +148,12 @@ class SteamBotSession {
             this.botState.activeAppIds = gamesToPlay;
             this.botState.currentFarm = `Farmando ${gamesToPlay.length} jogo(s)`;
             this.addLog(`Iniciando farm para ${gamesToPlay.length} jogo(s)... (${totalDrops} cartas restantes)`);
+            if (!this.botState.farmingStartTime) this.botState.farmingStartTime = Date.now();
             this.client.gamesPlayed(gamesToPlay);
           } else {
             this.botState.currentFarm = 'Concluído (0 cartas)';
             this.botState.activeAppIds = [];
+            this.botState.farmingStartTime = null;
             this.addLog('Nenhuma carta disponível para farmar.');
             this.client.gamesPlayed([]);
           }
@@ -205,6 +208,7 @@ class SteamBotSession {
             this.addLog(`[System] O farming foi pausado porque você está jogando em outro dispositivo (AppID: ${playingApp}).`);
             this.client.gamesPlayed([]);
             this.botState.activeAppIds = [];
+            this.botState.farmingStartTime = null;
             this.botState.currentFarm = 'Pausado (Jogando outro jogo)';
           } else if (this.botState.isPausedForPlaying) {
             this.botState.isPausedForPlaying = false;
@@ -389,6 +393,7 @@ app.post('/api/farm-stop', (req, res) => {
       session.botState.isManualPaused = true;
       if (session.checkTimeoutId) clearTimeout(session.checkTimeoutId);
       session.botState.nextCheckTime = 0;
+      session.botState.farmingStartTime = null;
       session.client.gamesPlayed([]);
       session.botState.currentFarm = 'Pausado Manualmente';
       session.addLog(`Farm parado para o jogo ${appId}. Nenhum outro jogo na lista.`);
@@ -397,6 +402,7 @@ app.post('/api/farm-stop', (req, res) => {
     session.botState.isManualPaused = true;
     if (session.checkTimeoutId) clearTimeout(session.checkTimeoutId);
     session.botState.nextCheckTime = 0;
+    session.botState.farmingStartTime = null;
     session.client.gamesPlayed([]);
     session.botState.currentFarm = 'Pausado Manualmente';
     session.botState.activeAppIds = [];
@@ -490,6 +496,7 @@ app.post('/api/logout', (req, res) => {
   session.botState.isClientLoggedIn = false;
   session.botState.currentFarm = 'None';
   session.botState.activeAppIds = [];
+  session.botState.farmingStartTime = null;
   session.botState.avatar = '';
   session.botState.username = '';
   session.addLog('Sessão encerrada (Logout).');

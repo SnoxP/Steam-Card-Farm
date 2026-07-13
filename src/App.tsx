@@ -161,6 +161,7 @@ function AppContent() {
   const [activeConsoleTab, setActiveConsoleTab] = useState<'console' | 'available' | 'all'>('console');
   
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [timeElapsed, setTimeElapsed] = useState<number | null>(null);
   
   const consoleRef = useRef<HTMLDivElement>(null);
   const manualFarmRef = useRef<HTMLDivElement>(null);
@@ -213,23 +214,40 @@ function AppContent() {
   };
 
   useEffect(() => {
-    if (status?.nextCheckTime && status?.isClientLoggedIn && status?.activeAppIds?.length > 0) {
-      const updateTimer = () => {
+    const updateTimer = () => {
+      if (status?.nextCheckTime && status?.isClientLoggedIn && status?.activeAppIds?.length > 0) {
         const remaining = Math.max(0, Math.floor((status.nextCheckTime - Date.now()) / 1000));
         setTimeLeft(remaining);
-      };
+      } else {
+        setTimeLeft(null);
+      }
       
-      updateTimer();
-      const interval = setInterval(updateTimer, 1000);
-      return () => clearInterval(interval);
-    } else {
-      setTimeLeft(null);
-    }
-  }, [status?.nextCheckTime, status?.isClientLoggedIn, status?.activeAppIds]);
+      if (status?.farmingStartTime && status?.isClientLoggedIn && status?.activeAppIds?.length > 0) {
+        const elapsed = Math.max(0, Math.floor((Date.now() - status.farmingStartTime) / 1000));
+        setTimeElapsed(elapsed);
+      } else {
+        setTimeElapsed(null);
+      }
+    };
+    
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [status?.nextCheckTime, status?.farmingStartTime, status?.isClientLoggedIn, status?.activeAppIds]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatElapsed = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    if (hrs > 0) {
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -662,6 +680,7 @@ function AppContent() {
 
                             <div className="flex flex-col gap-1 text-[11px] text-[#8b949e] font-mono">
                               <div>Iniciado em: <span className="text-white">{status?.farmingStartTime ? new Date(status.farmingStartTime).toLocaleTimeString() : "N/A"}</span></div>
+                              {timeElapsed !== null && <div>Tempo rodado: <span className="text-white">{formatElapsed(timeElapsed)}</span></div>}
                               {timeLeft !== null && <div>Próxima checagem: <span className="text-green-400">{formatTime(timeLeft)}</span></div>}
                             </div>
                             
