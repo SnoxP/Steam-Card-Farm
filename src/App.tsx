@@ -241,6 +241,21 @@ function AppContent() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const formatStartTime = (timestamp: number) => {
+    const d = new Date(timestamp);
+    let h = d.getHours();
+    const m = d.getMinutes().toString().padStart(2, '0');
+    const ampm = h >= 12 ? 'pm' : 'am';
+    h = h % 12;
+    h = h ? h : 12;
+    const hStr = h.toString().padStart(2, '0');
+    
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    
+    return `${hStr}:${m}${ampm} (${day}/${month})`;
+  };
+
   const formatElapsed = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -679,7 +694,7 @@ function AppContent() {
                             </div>
 
                             <div className="flex flex-col gap-1 text-[11px] text-[#8b949e] font-mono">
-                              <div>Iniciado em: <span className="text-white">{status?.farmingStartTime ? new Date(status.farmingStartTime).toLocaleTimeString() : "N/A"}</span></div>
+                              <div>Iniciado em: <span className="text-white">{status?.farmingStartTime ? formatStartTime(status.farmingStartTime) : "N/A"}</span></div>
                               <div>Tempo rodado: <span className="text-white">{timeElapsed !== null ? formatElapsed(timeElapsed) : "N/A"}</span></div>
                               {timeLeft !== null && <div>Próxima checagem: <span className="text-green-400">{formatTime(timeLeft)}</span></div>}
                             </div>
