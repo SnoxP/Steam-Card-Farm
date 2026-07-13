@@ -87,20 +87,7 @@ class SteamBotSession {
 
     public startCheckTimer() {
       if (this.checkTimeoutId) clearTimeout(this.checkTimeoutId);
-      if (this.botState.isPausedForPlaying || this.botState.isManualPaused) {
-        this.botState.nextCheckTime = 0;
-        return;
-      }
-      const interval = 15 * 60 * 1000;
-      this.botState.nextCheckTime = Date.now() + interval;
-      this.checkTimeoutId = setTimeout(() => {
-        if (!this.botState.isClientLoggedIn) {
-          this.startCheckTimer();
-          return;
-        }
-        this.addLog('[System] Iniciando verificação automática periódica...');
-        this.checkBadgesAndFarm();
-      }, interval);
+      this.botState.nextCheckTime = 0;
     }
 
     public checkBadgesAndFarm() {
