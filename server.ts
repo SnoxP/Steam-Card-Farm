@@ -412,6 +412,24 @@ app.post('/api/farm-stop', (req, res) => {
 });
 
 
+
+app.post('/api/farm-resume', (req, res) => {
+  const session = getSession(req);
+  if (session.botState.isClientLoggedIn && session.botState.activeAppIds.length > 0) {
+    session.botState.isManualPaused = true;
+    if (session.checkTimeoutId) clearTimeout(session.checkTimeoutId);
+    session.botState.nextCheckTime = 0;
+    session.botState.farmingStartTime = Date.now();
+    session.client.gamesPlayed(session.botState.activeAppIds);
+    const appIds = session.botState.activeAppIds;
+    session.botState.currentFarm = `${appIds.length} jogo${appIds.length > 1 ? 's' : ''} manual${appIds.length > 1 ? 'is' : ''}`;
+    session.addLog(`Farming manual retomado para AppIDs: ${appIds.join(', ')}`);
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Não foi possível retomar o farm.' });
+  }
+});
+
 app.post('/api/farm-pause', (req, res) => {
   const session = getSession(req);
   if (session.botState.isClientLoggedIn) {

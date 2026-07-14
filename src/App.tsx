@@ -74,7 +74,10 @@ const t = {
     noCardsYet: "Nenhuma carta coletada ainda nesta sessão.",
     minPrice: "Menor preço",
     tutorialHelp: "Não sabe o que fazer? (Ajuda)",
-    sessionSaved: "Sessão Salva: Um token de sessão válido foi encontrado. Você pode continuar farmando sem digitar sua senha."
+    sessionSaved: "Sessão Salva: Um token de sessão válido foi encontrado. Você pode continuar farmando sem digitar sua senha.",
+    pauseBtn: "Pausar",
+    resumeBtn: "Continuar",
+    stopBtn: "Parar",
   },
   en: {
     accountLinkConfig: "{t[lang].accountLinkConfig}",
@@ -340,6 +343,26 @@ function AppContent() {
     } catch (e) {
       console.error(e);
       alert('Erro ao pausar o farm.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResumeFarm = async () => {
+    setLoading(true);
+    try {
+      const res = await apiFetch('/api/farm-resume', {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+      } else {
+        await fetchStatus();
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao retomar o farm.');
     } finally {
       setLoading(false);
     }
@@ -986,21 +1009,31 @@ function AppContent() {
                               disabled={loading || !manualAppId}
                               className="flex-1 py-3 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white border border-[#3b82f6]/30 rounded-md text-xs font-bold transition-colors uppercase disabled:opacity-50"
                             >
-                              Farm
+                              {t[lang].farm}
                             </button>
-                            <button 
-                              onClick={handlePauseFarm}
-                              disabled={loading || !status?.activeAppIds || status.activeAppIds.length === 0}
-                              className="flex-1 py-3 bg-[#d97706] hover:bg-[#b45309] text-white border border-[#f59e0b]/30 rounded-md text-xs font-bold transition-colors uppercase disabled:opacity-50 disabled:bg-[#1d2630] disabled:text-[#8b949e] disabled:border-transparent"
-                            >
-                              Pause
-                            </button>
+                            {(!status?.farmingStartTime && status?.activeAppIds && status.activeAppIds.length > 0) ? (
+                              <button 
+                                onClick={handleResumeFarm}
+                                disabled={loading}
+                                className="flex-1 py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white border border-[#22c55e]/30 rounded-md text-xs font-bold transition-colors uppercase disabled:opacity-50 disabled:bg-[#1d2630] disabled:text-[#8b949e] disabled:border-transparent"
+                              >
+                                {t[lang].resumeBtn}
+                              </button>
+                            ) : (
+                              <button 
+                                onClick={handlePauseFarm}
+                                disabled={loading || !status?.activeAppIds || status.activeAppIds.length === 0}
+                                className="flex-1 py-3 bg-[#d97706] hover:bg-[#b45309] text-white border border-[#f59e0b]/30 rounded-md text-xs font-bold transition-colors uppercase disabled:opacity-50 disabled:bg-[#1d2630] disabled:text-[#8b949e] disabled:border-transparent"
+                              >
+                                {t[lang].pauseBtn}
+                              </button>
+                            )}
                             <button 
                               onClick={handleStopFarm}
                               disabled={loading || !status?.activeAppIds || status.activeAppIds.length === 0}
                               className="flex-1 py-3 bg-[#7f1d1d] hover:bg-[#991b1b] text-white border border-[#f87171]/30 rounded-md text-xs font-bold transition-colors uppercase disabled:opacity-50 disabled:bg-[#1d2630] disabled:text-[#8b949e] disabled:border-transparent"
                             >
-                              Stop
+                              {t[lang].stopBtn}
                             </button>
                           </div>
                         </div>
