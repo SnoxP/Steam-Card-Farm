@@ -14,6 +14,7 @@ import { getSessionId, safeGetItem, safeSetItem, safeRemoveItem, apiFetch } from
 
 const t = {
   pt: {
+    accountLinkConfig: "Configuração de Link de Conta",
     management: "Gerenciamento",
     currentFarm: "Farm Atual",
     howToUseTags: "Como usar as tags de AppID?",
@@ -55,9 +56,9 @@ const t = {
     password: "Senha",
     steamGuardCode: "Código Steam Guard",
     submitCode: "Enviar Código",
-    triggerAutoFarm: "Iniciar Auto-Farm",
-    stopFarming: "Parar Farming",
-    logoutClear: "Sair e Limpar Sessão",
+    triggerAutoFarm: "INICIAR AUTO-FARM",
+    stopFarming: "PARAR FARMING",
+    logoutClear: "SAIR E LIMPAR SESSÃO",
     startAutoFarming: "Iniciar Auto-Farming",
     restoreSession: "Restaurar Sessão",
     clearToken: "Limpar Token",
@@ -74,6 +75,7 @@ const t = {
     sessionSaved: "Sessão Salva: Um token de sessão válido foi encontrado. Você pode continuar farmando sem digitar sua senha."
   },
   en: {
+    accountLinkConfig: "{t[lang].accountLinkConfig}",
     management: "Management",
     currentFarm: "Current Farm",
     howToUseTags: "How to use AppID tags?",
@@ -115,9 +117,9 @@ const t = {
     password: "Password",
     steamGuardCode: "Steam Guard Code",
     submitCode: "Submit Code",
-    triggerAutoFarm: "Trigger Auto-Farm",
-    stopFarming: "Stop Farming",
-    logoutClear: "Logout & Clear Session",
+    triggerAutoFarm: "TRIGGER AUTO-FARM",
+    stopFarming: "STOP FARMING",
+    logoutClear: "LOGOUT & CLEAR SESSION",
     startAutoFarming: "Start Auto-Farming",
     restoreSession: "Restore Session",
     clearToken: "Clear Token",
@@ -274,7 +276,9 @@ function AppContent() {
 
   useEffect(() => {
     if (consoleRef.current) {
-      consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
+      if (consoleRef.current.dataset.autoScroll !== "false") {
+        consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
+      }
     }
   }, [status?.logs]);
 
@@ -319,6 +323,26 @@ function AppContent() {
       console.error(e);
     }
     setLoading(false);
+  };
+
+  const handlePauseFarm = async () => {
+    setLoading(true);
+    try {
+      const res = await apiFetch('/api/farm-pause', {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+      } else {
+        await fetchStatus();
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao pausar o farm.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStopFarm = async () => {
@@ -632,7 +656,7 @@ function AppContent() {
                   </div>
                 </div>
 
-                <div className="bg-[#10151c] border border-[#1d2630] rounded-lg p-4 flex items-center justify-between gap-3 h-24">
+                <div className="col-span-2 md:col-span-1 lg:col-span-1 bg-[#10151c] border border-[#1d2630] rounded-lg p-4 flex items-center justify-between gap-3 h-24">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     {status?.avatar ? (
                       <div className="relative shrink-0">
@@ -674,7 +698,7 @@ function AppContent() {
                       </div>
                     </div>
                     
-                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-6 grid max-md:grid-flow-col max-md:grid-rows-2 max-md:auto-cols-[85%] max-md:overflow-x-auto gap-4 custom-scrollbar-blue max-md:pb-6 md:grid-cols-2">
                       {status?.activeAppIds && status.activeAppIds.length > 0 ? (
                         status.activeAppIds.map((id: number) => (
                           <div key={id} className="bg-[#0b1016] border border-[#1d2630] rounded-lg p-4 flex flex-col gap-4 relative">
@@ -682,9 +706,9 @@ function AppContent() {
                               <div className="w-32 h-16 bg-gray-800 rounded overflow-hidden border border-[#1d2630]">
                                 <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${id}/header.jpg`} alt={`App ${id}`} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                               </div>
-                              <div className="px-2.5 py-1 bg-green-500/10 border border-green-500/20 text-green-400 text-[9px] font-bold uppercase rounded flex items-center gap-1.5">
+                              <div className={`px-2.5 py-1 border text-[9px] font-bold uppercase rounded flex items-center gap-1.5 ${!status?.farmingStartTime ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : status?.isManualPaused ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-green-500/10 border-green-500/20 text-green-400'}`}>
                                 <Activity size={10} />
-                                EM EXECUÇÃO
+                                {!status?.farmingStartTime ? 'PAUSADO' : status?.isManualPaused ? 'MANUAL' : 'AUTOMÁTICO'}
                               </div>
                             </div>
                             
@@ -724,7 +748,7 @@ function AppContent() {
                   </div>
 
                   {/* CONSOLE */}
-                  <div className="bg-[#10151c] border border-[#1d2630] rounded-lg overflow-hidden flex flex-col flex-1 min-h-[300px]">
+                  <div className="bg-[#10151c] border border-[#1d2630] rounded-lg overflow-hidden flex flex-col h-80">
                     <div className="flex border-b border-[#1d2630] bg-[#0d1217]">
                       <button 
                         onClick={() => setActiveConsoleTab('console')}
@@ -747,7 +771,15 @@ function AppContent() {
                     </div>
                     
                     {activeConsoleTab === 'console' && (
-                      <div ref={consoleRef} className="flex-1 p-5 font-mono text-[11px] leading-relaxed text-[#8b949e] overflow-y-auto bg-[#080b0e] shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
+                      <div 
+  ref={consoleRef} 
+  className="flex-1 p-5 font-mono text-[11px] leading-relaxed text-[#8b949e] overflow-y-auto bg-[#080b0e] shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] custom-scrollbar-blue"
+  onScroll={(e) => {
+    const target = e.currentTarget;
+    const isAtBottom = Math.abs(target.scrollHeight - target.scrollTop - target.clientHeight) < 10;
+    target.dataset.autoScroll = isAtBottom ? "true" : "false";
+  }}
+>
                         {logs.map((log: string, i: number) => {
                           let isSystem = log.includes('[System]') || log.includes('[Sytem]');
                           let isError = log.includes('[Erro');
@@ -831,7 +863,7 @@ function AppContent() {
                   <div className="bg-[#10151c] border border-[#1d2630] rounded-lg overflow-hidden">
                     <div className="px-5 py-4 border-b border-[#1d2630] bg-[#0d1217] flex items-center gap-2">
                       <LinkIcon size={16} className="text-[#eab308]" />
-                      <h2 className="text-xs font-bold uppercase text-white tracking-wider">Account Link Configuration</h2>
+                      <h2 className="text-xs font-bold uppercase text-white tracking-wider">{t[lang].accountLinkConfig}</h2>
                     </div>
                     <div className="p-5 space-y-4">
                       {refreshToken && !status?.steamGuardRequired ? (
@@ -852,14 +884,14 @@ function AppContent() {
                                   disabled={loading}
                                   className="flex-1 py-3 bg-[#166534] hover:bg-[#15803d] text-white rounded-md text-xs font-bold transition-colors uppercase border border-[#22c55e]/30 flex justify-center items-center gap-2"
                                 >
-                                  <span className="text-[#4ade80]">▶</span> TRIGGER AUTO-FARM
+                                  <span className="text-[#4ade80]">▶</span> {t[lang].triggerAutoFarm}
                                 </button>
                                 <button 
                                   onClick={handleStopFarm}
                                   disabled={loading}
                                   className="flex-1 py-3 bg-[#991b1b] hover:bg-[#b91c1c] text-white rounded-md text-xs font-bold transition-colors uppercase border border-[#f87171]/30 flex justify-center items-center gap-2"
                                 >
-                                  <span className="w-2.5 h-2.5 bg-white rounded-sm"></span> STOP FARMING
+                                  <span className="w-2.5 h-2.5 bg-white rounded-sm"></span> {t[lang].stopFarming}
                                 </button>
                               </div>
                               <button 
@@ -867,7 +899,7 @@ function AppContent() {
                                 disabled={loading}
                                 className="w-full py-3 bg-[#080b0e] hover:bg-[#121820] text-red-500 border border-[#1d2630] rounded-md text-xs font-bold transition-colors flex justify-center items-center gap-2 uppercase"
                               >
-                                <X size={16} /> LOGOUT & CLEAR SESSION
+                                <X size={16} /> {t[lang].logoutClear}
                               </button>
                             </div>
                           ) : (
@@ -940,30 +972,37 @@ function AppContent() {
                         <h2 className="text-xs font-bold uppercase text-white tracking-wider">Farming Manual (AppID)</h2>
                       </div>
                       <div className="p-5 space-y-4">
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-3">
                           <input 
                             type="text" 
                             value={manualAppId}
                             onChange={(e) => setManualAppId(e.target.value)}
                             placeholder="Ex: 730, 570, 440" 
-                            className="flex-1 bg-[#080b0e] border border-[#1d2630] rounded-md px-4 py-3 text-xs font-mono focus:border-[#3b82f6]/50 outline-none text-white transition-colors placeholder-[#4b5563]" 
+                            className="w-full bg-[#080b0e] border border-[#1d2630] rounded-md px-4 py-3 text-xs font-mono focus:border-[#3b82f6]/50 outline-none text-white transition-colors placeholder-[#4b5563]" 
                           />
-                          <button 
-                            onClick={handleManualFarm}
-                            disabled={loading || !manualAppId}
-                            className="px-6 py-3 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white border border-[#3b82f6]/30 rounded-md text-xs font-bold transition-colors uppercase disabled:opacity-50"
-                          >
-                            Farm
-                          </button>
-                          {status?.activeAppIds && status.activeAppIds.length > 0 && (
+                          <div className="flex gap-2">
+                            <button 
+                              onClick={handleManualFarm}
+                              disabled={loading || !manualAppId}
+                              className="flex-1 py-3 bg-[#1e3a8a] hover:bg-[#1d4ed8] text-white border border-[#3b82f6]/30 rounded-md text-xs font-bold transition-colors uppercase disabled:opacity-50"
+                            >
+                              Farm
+                            </button>
+                            <button 
+                              onClick={handlePauseFarm}
+                              disabled={loading || !status?.activeAppIds || status.activeAppIds.length === 0}
+                              className="flex-1 py-3 bg-[#d97706] hover:bg-[#b45309] text-white border border-[#f59e0b]/30 rounded-md text-xs font-bold transition-colors uppercase disabled:opacity-50 disabled:bg-[#1d2630] disabled:text-[#8b949e] disabled:border-transparent"
+                            >
+                              Pause
+                            </button>
                             <button 
                               onClick={handleStopFarm}
-                              disabled={loading}
-                              className="px-6 py-3 bg-[#7f1d1d] hover:bg-[#991b1b] text-white border border-[#f87171]/30 rounded-md text-xs font-bold transition-colors uppercase"
+                              disabled={loading || !status?.activeAppIds || status.activeAppIds.length === 0}
+                              className="flex-1 py-3 bg-[#7f1d1d] hover:bg-[#991b1b] text-white border border-[#f87171]/30 rounded-md text-xs font-bold transition-colors uppercase disabled:opacity-50 disabled:bg-[#1d2630] disabled:text-[#8b949e] disabled:border-transparent"
                             >
                               Stop
                             </button>
-                          )}
+                          </div>
                         </div>
                         
                         <div>

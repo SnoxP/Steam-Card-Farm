@@ -146,7 +146,7 @@ class SteamBotSession {
           if (this.botState.availableGamesToFarm.length > 0) {
             const gamesToPlay = this.botState.availableGamesToFarm.map((g: any) => g.appId);
             this.botState.activeAppIds = gamesToPlay;
-            this.botState.currentFarm = `Farmando ${gamesToPlay.length} jogo(s)`;
+            this.botState.currentFarm = `Farmando ${gamesToPlay.length} jogo${gamesToPlay.length > 1 ? 's' : ''}`;
             this.addLog(`Iniciando farm para ${gamesToPlay.length} jogo(s)... (${totalDrops} cartas restantes)`);
             if (!this.botState.farmingStartTime) this.botState.farmingStartTime = Date.now();
             this.client.gamesPlayed(gamesToPlay);
@@ -387,7 +387,7 @@ app.post('/api/farm-stop', (req, res) => {
     session.botState.activeAppIds = session.botState.activeAppIds.filter(id => id !== appId);
     if (session.botState.activeAppIds.length > 0) {
       session.client.gamesPlayed(session.botState.activeAppIds);
-      session.botState.currentFarm = `Farmando ${session.botState.activeAppIds.length} jogo(s)`;
+      session.botState.currentFarm = `Farmando ${session.botState.activeAppIds.length} jogo${session.botState.activeAppIds.length > 1 ? 's' : ''}`;
       session.addLog(`Farm parado para o jogo ${appId}. Farmando os demais...`);
     } else {
       session.botState.isManualPaused = true;
@@ -409,6 +409,23 @@ app.post('/api/farm-stop', (req, res) => {
     session.addLog('Farming parado manualmente.');
   }
   res.json({ success: true });
+});
+
+
+app.post('/api/farm-pause', (req, res) => {
+  const session = getSession(req);
+  if (session.botState.isClientLoggedIn) {
+    session.botState.isManualPaused = true;
+    if (session.checkTimeoutId) clearTimeout(session.checkTimeoutId);
+    session.botState.nextCheckTime = 0;
+    session.botState.farmingStartTime = null;
+    session.client.gamesPlayed([]);
+    session.botState.currentFarm = 'Farm manual pausado';
+    session.addLog('Farming manual pausado.');
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Não foi possível pausar o farm.' });
+  }
 });
 
 app.post('/api/farm-auto', (req, res) => {
@@ -442,7 +459,7 @@ app.post('/api/farm-manual', (req, res) => {
     session.botState.nextCheckTime = 0;
     session.botState.farmingStartTime = Date.now();
     session.client.gamesPlayed(appIds);
-    session.botState.currentFarm = `${appIds.length} jogo(s) manual(is) (${appIds.join(', ')})`;
+    session.botState.currentFarm = `${appIds.length} jogo${appIds.length > 1 ? 's' : ''} manual${appIds.length > 1 ? 'is' : ''}`;
     session.botState.activeAppIds = appIds;
     session.addLog(`Farming manual iniciado para AppIDs: ${appIds.join(', ')}`);
     res.json({ success: true });
