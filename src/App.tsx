@@ -16,6 +16,8 @@ const t = {
   pt: {
     accountLinkConfig: "Configuração de Link de Conta",
     management: "Gerenciamento",
+    currentGame: "Jogo Atual",
+    currentGames: "Jogos Atuais",
     currentFarm: "Farm Atual",
     howToUseTags: "Como usar as tags de AppID?",
     stopRunningTitle: "Para parar de rodar:",
@@ -77,6 +79,8 @@ const t = {
   en: {
     accountLinkConfig: "{t[lang].accountLinkConfig}",
     management: "Management",
+    currentGame: "Current Game",
+    currentGames: "Current Games",
     currentFarm: "Current Farm",
     howToUseTags: "How to use AppID tags?",
     stopRunningTitle: "To stop running:",
@@ -245,17 +249,13 @@ function AppContent() {
 
   const formatStartTime = (timestamp: number) => {
     const d = new Date(timestamp);
-    let h = d.getHours();
+    const hStr = d.getHours().toString().padStart(2, '0');
     const m = d.getMinutes().toString().padStart(2, '0');
-    const ampm = h >= 12 ? 'pm' : 'am';
-    h = h % 12;
-    h = h ? h : 12;
-    const hStr = h.toString().padStart(2, '0');
     
     const day = d.getDate().toString().padStart(2, '0');
     const month = (d.getMonth() + 1).toString().padStart(2, '0');
     
-    return `${hStr}:${m}${ampm} (${day}/${month})`;
+    return `${hStr}:${m} (${day}/${month})`;
   };
 
   const formatElapsed = (seconds: number) => {
@@ -649,14 +649,14 @@ function AppContent() {
                 <div className="bg-[#10151c] border border-[#1d2630] rounded-lg p-4 flex flex-col justify-center gap-1 relative overflow-hidden h-24">
                   <div className="flex items-center gap-2 text-[10px] text-[#8b949e] font-bold tracking-wider uppercase">
                     <Activity size={14} className="text-[#3b82f6]" />
-                    {t[lang].currentFarm}
+                    {status?.activeAppIds?.length > 1 ? t[lang].currentGames : t[lang].currentGame}
                   </div>
                   <div className={`text-sm font-bold ${status?.currentFarm?.includes('Pausado') ? 'text-amber-500' : 'text-[#3b82f6]'} leading-tight line-clamp-2`}>
                     {status?.currentFarm || 'None'}
                   </div>
                 </div>
 
-                <div className="col-span-2 md:col-span-1 lg:col-span-1 bg-[#10151c] border border-[#1d2630] rounded-lg p-4 flex items-center justify-between gap-3 h-24">
+                <div className="max-md:col-span-2 md:col-span-1 lg:col-span-1 bg-[#10151c] border border-[#1d2630] rounded-lg p-4 flex items-center justify-between gap-3 h-24">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     {status?.avatar ? (
                       <div className="relative shrink-0">

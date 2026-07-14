@@ -462,6 +462,31 @@ app.post('/api/farm-manual', (req, res) => {
     session.botState.currentFarm = `${appIds.length} jogo${appIds.length > 1 ? 's' : ''} manual${appIds.length > 1 ? 'is' : ''}`;
     session.botState.activeAppIds = appIds;
     session.addLog(`Farming manual iniciado para AppIDs: ${appIds.join(', ')}`);
+    
+    // Fetch names in background
+    fetch(`https://store.steampowered.com/api/appdetails?appids=${appIds.join(',')}`)
+      .then(res => res.json())
+      .then(data => {
+        appIds.forEach(id => {
+          if (data[id] && data[id].success && data[id].data && data[id].data.name) {
+            const exists = session.botState.allBadges.find(b => b.appId === id);
+            if (!exists) {
+              session.botState.allBadges.push({
+                appId: id,
+                name: data[id].data.name,
+                drops: 0,
+                text: 'Manual'
+              });
+            } else if (exists.name === 'Jogo Desconhecido' || !exists.name) {
+              exists.name = data[id].data.name;
+            }
+          }
+        });
+      })
+      .catch(err => {
+        console.error('Error fetching app details', err);
+      });
+
     res.json({ success: true });
   } else {
     res.status(400).json({ error: 'Não foi possível iniciar o farm manual. Verifique se está logado e o AppID é válido.' });
