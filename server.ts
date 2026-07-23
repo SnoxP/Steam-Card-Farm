@@ -407,6 +407,7 @@ app.post('/api/farm-stop', (req, res) => {
     session.botState.currentFarm = 'Pausado Manualmente';
     session.botState.activeAppIds = [];
     session.addLog('Farming parado manualmente.');
+    session.checkBadgesAndFarm();
   }
   res.json({ success: true });
 });
