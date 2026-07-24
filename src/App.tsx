@@ -194,29 +194,6 @@ function AppContent() {
       const res = await apiFetch('/api/status');
       const data = await res.json();
       setStatus(data);
-      
-      // Auto-login logic: if backend is offline, we have a token, and haven't tried yet
-      if (!data.isClientLoggedIn && !data.steamGuardRequired && !hasAttemptedAutoLogin.current) {
-        const storedToken = safeGetItem('steam_refresh_token');
-        if (storedToken && storedToken !== '') {
-          hasAttemptedAutoLogin.current = true;
-          setLoading(true);
-          try {
-            await apiFetch('/api/login-client', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ refreshToken: storedToken })
-            });
-            // Fetch status again after triggering login
-            const resAfter = await apiFetch('/api/status');
-            const dataAfter = await resAfter.json();
-            setStatus(dataAfter);
-          } catch (e) {
-            console.error('Auto-login failed', e);
-          }
-          setLoading(false);
-        }
-      }
     } catch (e) {
       console.error(e);
     }
@@ -505,18 +482,14 @@ function AppContent() {
           </div>
         </div>
         <div className="flex items-center mt-3 sm:mt-0">
-          {refreshToken && (
+          {status?.isClientLoggedIn && (
             <button 
               onClick={handleToggleActive}
               disabled={loading}
-              className={`px-3 py-1 rounded-full flex items-center gap-2 text-xs font-bold tracking-wider transition-colors border ${
-                status?.isClientLoggedIn 
-                  ? 'bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20' 
-                  : 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
-              }`}
+              className={`px-3 py-1 rounded-full flex items-center gap-2 text-xs font-bold tracking-wider transition-colors border bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20`}
             >
-              <span className={`w-2 h-2 rounded-full ${status?.isClientLoggedIn ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></span>
-              {status?.isClientLoggedIn ? 'ACTIVE' : 'OFFLINE'}
+              <span className={`w-2 h-2 rounded-full bg-green-400 animate-pulse`}></span>
+              ACTIVE
             </button>
           )}
           <button 
@@ -964,7 +937,7 @@ function AppContent() {
                             </div>
                           ) : (
                             <button 
-                              onClick={handleClientLogin}
+                              onClick={handleLoginWithToken}
                               disabled={loading}
                               className="w-full py-3 bg-[#166534] hover:bg-[#15803d] text-white rounded-md text-xs font-bold transition-colors uppercase border border-[#22c55e]/30"
                             >

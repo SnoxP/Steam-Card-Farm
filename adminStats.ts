@@ -1,7 +1,5 @@
-import fs from 'fs';
-import path from 'path';
-
-const STATS_FILE = path.join(process.cwd(), 'admin-stats.json');
+import { db } from './db';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export interface AppUser {
   steamId: string;
@@ -20,9 +18,10 @@ export interface AdminStats {
 
 export async function loadStats(): Promise<AdminStats> {
   try {
-    if (fs.existsSync(STATS_FILE)) {
-      const data = fs.readFileSync(STATS_FILE, 'utf-8');
-      const stats = JSON.parse(data);
+    const docRef = doc(db, 'system', 'admin-stats');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const stats = docSnap.data() as AdminStats;
       for (const key in stats.users) {
         if (stats.users[key].username === 'SnoxP718') {
           stats.users[key].isAdmin = true;
@@ -39,7 +38,8 @@ export async function loadStats(): Promise<AdminStats> {
 
 export async function saveStats(stats: AdminStats) {
   try {
-    fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
+    const docRef = doc(db, 'system', 'admin-stats');
+    await setDoc(docRef, stats, { merge: true });
   } catch (err) {
     console.error('Error saving admin stats', err);
   }

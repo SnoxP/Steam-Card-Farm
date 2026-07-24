@@ -86,6 +86,26 @@ class SteamBotSession {
       return 0;
     }
 
+    
+    public updateCollectedCards() {
+      if (!this.client.steamID) return;
+      this.community.getUserInventoryContents(this.client.steamID, 753, 6, true, (err: any, inventory: any[]) => {
+        if (err) {
+          // this.addLog(`[System] Erro ao obter inventário para atualizar cartas coletadas: ${err.message}`);
+          return;
+        }
+        if (inventory) {
+          const cards = inventory.filter(item => item.tags && item.tags.some((t: any) => t.internal_name === 'item_class_2'));
+          this.botState.collectedCardsDetails = cards.map(item => ({
+            image: `https://steamcommunity-a.akamaihd.net/economy/image/${item.icon_url}`,
+            title: item.name,
+            minPrice: 'N/A'
+          }));
+          this.saveCurrentSession();
+        }
+      });
+    }
+
     public startCheckTimer() {
       if (this.checkTimeoutId) clearTimeout(this.checkTimeoutId);
       this.botState.nextCheckTime = Date.now() + 30 * 60 * 1000;
@@ -141,8 +161,10 @@ class SteamBotSession {
             this.addLog(`[Sucesso] ${diff} carta(s) dropada(s)! Total na sessão: ${this.botState.cardsDropped}`);
             if (this.client.steamID) {
                recordCardsDropped(this.client.steamID.getSteamID64().toString(), diff);
+               this.updateCollectedCards();
+            } else {
+               this.saveCurrentSession();
             }
-            this.saveCurrentSession();
           }
           if (this.botState.isManualPaused) {
             this.addLog(`Verificação concluída. Farm está pausado. (${totalDrops} cartas restantes)`);
@@ -186,6 +208,7 @@ class SteamBotSession {
           this.addLog('Conectado à rede Steam com sucesso!');
           this.client.setPersona(SteamUser.EPersonaState.Online);
           this.botState.personaStateString = 'Online';
+          this.updateCollectedCards();
           const mySteamID = this.client.steamID;
           if (mySteamID) {
             this.client.getPersonas([mySteamID], (err, personas) => {
