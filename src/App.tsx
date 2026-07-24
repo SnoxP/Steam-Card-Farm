@@ -406,6 +406,33 @@ function AppContent() {
     setLoading(false);
   };
 
+  const handleToggleActive = async () => {
+    if (status?.isClientLoggedIn) {
+      setLoading(true);
+      try {
+        await apiFetch('/api/deactivate', { method: 'POST' });
+        await fetchStatus();
+      } catch (e) {
+        console.error(e);
+      }
+      setLoading(false);
+    } else {
+      if (!refreshToken) return;
+      setLoading(true);
+      try {
+        await apiFetch('/api/login-client', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken })
+        });
+        await fetchStatus();
+      } catch (e) {
+        console.error(e);
+      }
+      setLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     setLoading(true);
     try {
@@ -478,10 +505,20 @@ function AppContent() {
           </div>
         </div>
         <div className="flex items-center mt-3 sm:mt-0">
-          <div className="px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-400 rounded-full flex items-center gap-2 text-xs font-bold tracking-wider">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-            {status?.isClientLoggedIn ? 'ACTIVE' : 'OFFLINE'}
-          </div>
+          {refreshToken && (
+            <button 
+              onClick={handleToggleActive}
+              disabled={loading}
+              className={`px-3 py-1 rounded-full flex items-center gap-2 text-xs font-bold tracking-wider transition-colors border ${
+                status?.isClientLoggedIn 
+                  ? 'bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20' 
+                  : 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${status?.isClientLoggedIn ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></span>
+              {status?.isClientLoggedIn ? 'ACTIVE' : 'OFFLINE'}
+            </button>
+          )}
           <button 
             className="ml-4 md:hidden p-2 text-[#8b949e] hover:text-white"
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}

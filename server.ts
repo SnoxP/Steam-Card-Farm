@@ -88,7 +88,8 @@ class SteamBotSession {
 
     public startCheckTimer() {
       if (this.checkTimeoutId) clearTimeout(this.checkTimeoutId);
-      this.botState.nextCheckTime = 0;
+      this.botState.nextCheckTime = Date.now() + 30 * 60 * 1000;
+      this.checkTimeoutId = setTimeout(() => this.checkBadgesAndFarm(), 30 * 60 * 1000);
     }
 
     public checkBadgesAndFarm() {
@@ -143,7 +144,9 @@ class SteamBotSession {
             }
             this.saveCurrentSession();
           }
-          if (this.botState.availableGamesToFarm.length > 0) {
+          if (this.botState.isManualPaused) {
+            this.addLog(`Verificação concluída. Farm está pausado. (${totalDrops} cartas restantes)`);
+          } else if (this.botState.availableGamesToFarm.length > 0) {
             const gamesToPlay = this.botState.availableGamesToFarm.map((g: any) => g.appId);
             this.botState.activeAppIds = gamesToPlay;
             this.botState.currentFarm = `Farmando ${gamesToPlay.length} jogo${gamesToPlay.length > 1 ? 's' : ''}`;
@@ -546,6 +549,20 @@ app.post('/api/admin/update-user', async (req, res) => {
   if (!steamId) return res.status(400).json({ error: 'SteamID is required' });
   
   await updateUserStatus(steamId, { isAdmin, isBanned });
+  res.json({ success: true });
+});
+
+
+app.post('/api/deactivate', (req, res) => {
+  const session = getSession(req);
+  if (session.botState.isClientLoggedIn) {
+    session.client.logOff();
+  }
+  session.botState.isClientLoggedIn = false;
+  session.botState.currentFarm = 'None';
+  session.botState.activeAppIds = [];
+  session.botState.farmingStartTime = null;
+  session.addLog('Sistema desativado manualmente.');
   res.json({ success: true });
 });
 
