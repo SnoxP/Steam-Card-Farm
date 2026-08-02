@@ -354,6 +354,35 @@ function AppContent() {
     }
   };
 
+  
+  const handleUpdateCheckInterval = async (val: string) => {
+    const ms = parseTimeStringToMs(val);
+    try {
+      await apiFetch('/api/set-check-interval', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intervalMs: ms })
+      });
+      fetchStatus();
+    } catch(e) {
+      console.error(e);
+    }
+  };
+
+  
+  const handleResumeSingleApp = async (appId: number) => {
+    try {
+      await apiFetch('/api/farm-resume-app', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appId })
+      });
+      fetchStatus();
+    } catch(e) {
+      console.error(e);
+    }
+  };
+
   const handleStopSingleApp = async (appId: number) => {
     try {
       await apiFetch('/api/farm-stop', {
@@ -732,16 +761,29 @@ function AppContent() {
                     </div>
                     
                     <div className="p-6 grid max-md:grid-flow-col max-md:grid-rows-2 max-md:auto-cols-[85%] max-md:overflow-x-auto gap-4 custom-scrollbar-blue max-md:pb-6 md:grid-cols-2">
-                      {status?.activeAppIds && status.activeAppIds.length > 0 ? (
-                        status.activeAppIds.map((id: number) => (
+                      {(status?.activeAppIds?.length > 0 || status?.pausedGames?.length > 0) ? (
+                        <>
+                        {status?.activeAppIds?.map((id: number) => (
                           <div key={id} className="bg-[#0b1016] border border-[#1d2630] rounded-lg p-4 flex flex-col gap-4 relative">
                             <div className="flex justify-between items-start">
                               <div className="w-32 h-16 bg-gray-800 rounded overflow-hidden border border-[#1d2630]">
                                 <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${id}/header.jpg`} alt={`App ${id}`} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                               </div>
-                              <div className={`px-2.5 py-1 border text-[9px] font-bold uppercase rounded flex items-center gap-1.5 ${!status?.farmingStartTime ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : status?.isManualPaused ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-green-500/10 border-green-500/20 text-green-400'}`}>
-                                <Activity size={10} />
-                                {!status?.farmingStartTime ? 'PAUSADO' : status?.isManualPaused ? 'MANUAL' : 'AUTOMÁTICO'}
+                              <div className="flex flex-col items-end gap-1.5">
+                                <div className={`px-2.5 py-1 border text-[9px] font-bold uppercase rounded flex items-center gap-1.5 ${!status?.farmingStartTime ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : status?.isManualPaused ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-green-500/10 border-green-500/20 text-green-400'}`}>
+                                  <Activity size={10} />
+                                  {!status?.farmingStartTime ? 'PAUSADO' : status?.isManualPaused ? 'MANUAL' : 'AUTOMÁTICO'}
+                                </div>
+                                {!status?.isManualPaused && status?.farmingStartTime && (
+                                  <input
+                                    type="text"
+                                    placeholder="00:15:00"
+                                    title="Tempo de checagem (hh:mm:ss)"
+                                    defaultValue={formatMsToTimeString(status?.checkInterval)}
+                                    onBlur={(e) => handleUpdateCheckInterval(e.target.value)}
+                                    className="w-[60px] bg-[#0b1016] border border-[#1d2630] rounded px-1 py-0.5 text-[9px] text-center text-[#8b949e] focus:border-[#22c55e] focus:text-white outline-none placeholder-[#30363d] transition-colors"
+                                  />
+                                )}
                               </div>
                             </div>
                             
@@ -754,6 +796,9 @@ function AppContent() {
                               <div>Iniciado em: <span className="text-white">{status?.farmingStartTime ? formatStartTime(status.farmingStartTime) : "N/A"}</span></div>
                               <div>Tempo rodado: <span className="text-white">{timeElapsed !== null ? formatElapsed(timeElapsed) : "N/A"}</span></div>
                               {timeLeft !== null && <div>Próxima checagem: <span className="text-green-400">{formatTime(timeLeft)}</span></div>}
+                              {status?.availableGamesToFarm?.find((g: any) => g.appId === id) && (
+                                <div>Restantes: <span className="text-yellow-500">{status.availableGamesToFarm.find((g: any) => g.appId === id).drops} drops</span></div>
+                              )}
                             </div>
                             
                             <button 

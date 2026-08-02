@@ -35,6 +35,8 @@ class SteamBotSession {
         steamGuardDomain: '',
         refreshToken: '',
         activeAppIds: [] as number[],
+        pausedGames: [] as { appId: number, name: string, drops: number }[],
+        checkInterval: 15 * 60 * 1000,
         nextCheckTime: 0,
         farmingStartTime: null as number | null,
         logs: ['[System] Inicializando servidor Steam...'],
@@ -108,8 +110,8 @@ class SteamBotSession {
 
     public startCheckTimer() {
       if (this.checkTimeoutId) clearTimeout(this.checkTimeoutId);
-      this.botState.nextCheckTime = Date.now() + 30 * 60 * 1000;
-      this.checkTimeoutId = setTimeout(() => this.checkBadgesAndFarm(), 30 * 60 * 1000);
+      this.botState.nextCheckTime = Date.now() + this.botState.checkInterval;
+      this.checkTimeoutId = setTimeout(() => this.checkBadgesAndFarm(), this.botState.checkInterval);
     }
 
     public checkBadgesAndFarm() {
@@ -147,8 +149,15 @@ class SteamBotSession {
             if (appId > 0) {
               this.botState.allBadges.push({ appId, name, drops, text });
               if (drops > 0) {
-                this.botState.availableGamesToFarm.push({ appId, drops, name });
-                totalDrops += drops;
+                if (this.botState.pausedGames.some(g => g.appId === appId)) {
+                  const pg = this.botState.pausedGames.find(g => g.appId === appId);
+                  if (pg) pg.drops = drops;
+                } else {
+                  this.botState.availableGamesToFarm.push({ appId, drops, name });
+                  totalDrops += drops;
+                }
+              } else {
+                this.botState.pausedGames = this.botState.pausedGames.filter(g => g.appId !== appId);
               }
             }
           });
@@ -410,6 +419,16 @@ app.post('/api/farm-stop', (req, res) => {
     return res.status(400).json({ error: 'Não foi possível parar o farm. Verifique se está logado.' });
   }
   if (appId) {
+    // Adicionar à lista de pausados
+    const gameToPause = session.botState.availableGamesToFarm.find(g => g.appId === appId) || session.botState.allBadges.find(g => g.appId === appId);
+    if (gameToPause && !session.botState.pausedGames.some(g => g.appId === appId)) {
+      session.botState.pausedGames.push({ appId: gameToPause.appId, name: gameToPause.name, drops: gameToPause.drops });
+    }
+    // Remover do availableGamesToFarm
+    session.botState.availableGamesToFarm = session.botState.availableGamesToFarm.filter(g => g.appId !== appId);
+    // Atualizar total drops
+    session.botState.inventoryValue = session.botState.availableGamesToFarm.reduce((acc, g) => acc + g.drops, 0);
+
     session.botState.activeAppIds = session.botState.activeAppIds.filter(id => id !== appId);
     if (session.botState.activeAppIds.length > 0) {
       session.client.gamesPlayed(session.botState.activeAppIds);
@@ -439,6 +458,35 @@ app.post('/api/farm-stop', (req, res) => {
 });
 
 
+
+
+app.post('/api/farm-resume-app', (req, res) => {
+  const session = getSession(req);
+  const { appId } = req.body;
+  if (appId && session.botState.isClientLoggedIn) {
+    session.botState.pausedGames = session.botState.pausedGames.filter(g => g.appId !== appId);
+    session.botState.isManualPaused = false;
+    session.checkBadgesAndFarm();
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Falha ao retomar o app.' });
+  }
+});
+
+app.post('/api/set-check-interval', (req, res) => {
+  const session = getSession(req);
+  const { intervalMs } = req.body;
+  if (intervalMs && typeof intervalMs === 'number') {
+    session.botState.checkInterval = intervalMs;
+    // Restart timer if currently running
+    if (session.checkTimeoutId && !session.botState.isManualPaused) {
+      session.startCheckTimer();
+    }
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ error: 'Intervalo inválido.' });
+  }
+});
 
 app.post('/api/farm-resume', (req, res) => {
   const session = getSession(req);
