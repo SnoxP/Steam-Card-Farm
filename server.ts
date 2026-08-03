@@ -89,6 +89,34 @@ class SteamBotSession {
     }
 
     
+    
+    private async updatePricesSlowly(cards: any[]) {
+      for (const card of cards) {
+        if (!this.botState.isClientLoggedIn) break; // Stop if logged out
+        const existingCard = this.botState.collectedCardsDetails.find(c => c.title === card.name);
+        if (existingCard && existingCard.minPrice === 'N/A') {
+          try {
+            const url = `https://steamcommunity.com/market/priceoverview/?appid=753&currency=1&market_hash_name=${encodeURIComponent(card.market_hash_name)}`;
+            const res = await fetch(url, {
+              headers: { 'Cookie': (this.community._cookies || []).join('; ') }
+            });
+            if (res.status === 429) {
+              await new Promise(r => setTimeout(r, 60000)); // wait 1 minute on 429
+              continue;
+            }
+            const data = await res.json();
+            if (data && data.success) {
+              existingCard.minPrice = data.lowest_price || data.median_price || 'N/A';
+              this.saveCurrentSession();
+            }
+          } catch(e) {
+            // ignore
+          }
+          await new Promise(r => setTimeout(r, 3000)); // 3 seconds delay
+        }
+      }
+    }
+
     public updateCollectedCards() {
       if (!this.client.steamID) return;
       this.community.getUserInventoryContents(this.client.steamID, 753, 6, true, (err: any, inventory: any[]) => {
@@ -98,12 +126,19 @@ class SteamBotSession {
         }
         if (inventory) {
           const cards = inventory.filter(item => item.tags && item.tags.some((t: any) => t.internal_name === 'item_class_2'));
-          this.botState.collectedCardsDetails = cards.map(item => ({
-            image: `https://steamcommunity-a.akamaihd.net/economy/image/${item.icon_url}`,
-            title: item.name,
-            minPrice: 'N/A'
-          }));
+          // Preserve existing prices
+          this.botState.collectedCardsDetails = cards.map(item => {
+            const existing = this.botState.collectedCardsDetails.find(c => c.title === item.name);
+            return {
+              image: `https://steamcommunity-a.akamaihd.net/economy/image/${item.icon_url}`,
+              title: item.name,
+              minPrice: existing ? existing.minPrice : 'N/A'
+            };
+          });
           this.saveCurrentSession();
+          
+          // Start background price fetching without blocking
+          this.updatePricesSlowly(cards);
         }
       });
     }
@@ -332,7 +367,7 @@ const PORT = 3000;
 app.use(express.json());
 
 app.get('/api/status', async (req, res) => {
-  const session = getSession(req);
+  const session = await getSession(req);
   let isAdmin = false;
   let isBanned = false;
   
@@ -380,8 +415,8 @@ app.get('/api/status', async (req, res) => {
   res.json({ ...session.botState, isAdmin, isBanned });
 });
 
-app.post('/api/login-client', (req, res) => {
-  const session = getSession(req);
+app.post('/api/login-client', async (req, res) => {
+  const session = await getSession(req);
   const { accountName, password, twoFactorCode, refreshToken } = req.body;
   
   if (!accountName && !refreshToken) {
@@ -411,8 +446,8 @@ app.post('/api/login-client', (req, res) => {
   res.json({ success: true, message: 'Tentando logar no Client Matrix...' });
 });
 
-app.post('/api/farm-stop', (req, res) => {
-  const session = getSession(req);
+app.post('/api/farm-stop', async (req, res) => {
+  const session = await getSession(req);
   const { appId } = req.body;
   
   if (!session.botState.isClientLoggedIn) {
@@ -460,8 +495,8 @@ app.post('/api/farm-stop', (req, res) => {
 
 
 
-app.post('/api/farm-resume-app', (req, res) => {
-  const session = getSession(req);
+app.post('/api/farm-resume-app', async (req, res) => {
+  const session = await getSession(req);
   const { appId } = req.body;
   if (appId && session.botState.isClientLoggedIn) {
     session.botState.pausedGames = session.botState.pausedGames.filter(g => g.appId !== appId);
@@ -473,8 +508,8 @@ app.post('/api/farm-resume-app', (req, res) => {
   }
 });
 
-app.post('/api/set-check-interval', (req, res) => {
-  const session = getSession(req);
+app.post('/api/set-check-interval', async (req, res) => {
+  const session = await getSession(req);
   const { intervalMs } = req.body;
   if (intervalMs && typeof intervalMs === 'number') {
     session.botState.checkInterval = intervalMs;
@@ -488,8 +523,8 @@ app.post('/api/set-check-interval', (req, res) => {
   }
 });
 
-app.post('/api/farm-resume', (req, res) => {
-  const session = getSession(req);
+app.post('/api/farm-resume', async (req, res) => {
+  const session = await getSession(req);
   if (session.botState.isClientLoggedIn && session.botState.activeAppIds.length > 0) {
     session.botState.isManualPaused = true;
     if (session.checkTimeoutId) clearTimeout(session.checkTimeoutId);
@@ -505,8 +540,8 @@ app.post('/api/farm-resume', (req, res) => {
   }
 });
 
-app.post('/api/farm-pause', (req, res) => {
-  const session = getSession(req);
+app.post('/api/farm-pause', async (req, res) => {
+  const session = await getSession(req);
   if (session.botState.isClientLoggedIn) {
     session.botState.isManualPaused = true;
     if (session.checkTimeoutId) clearTimeout(session.checkTimeoutId);
@@ -521,8 +556,8 @@ app.post('/api/farm-pause', (req, res) => {
   }
 });
 
-app.post('/api/farm-auto', (req, res) => {
-  const session = getSession(req);
+app.post('/api/farm-auto', async (req, res) => {
+  const session = await getSession(req);
   if (session.botState.isPausedForPlaying) {
     return res.status(400).json({ error: 'O farming está pausado porque você está jogando em outro dispositivo. Feche o jogo primeiro.' });
   }
@@ -535,8 +570,8 @@ app.post('/api/farm-auto', (req, res) => {
   }
 });
 
-app.post('/api/farm-manual', (req, res) => {
-  const session = getSession(req);
+app.post('/api/farm-manual', async (req, res) => {
+  const session = await getSession(req);
   const { appId } = req.body;
   if (appId === undefined) return res.status(400).json({ error: 'AppID is required' });
   
@@ -586,8 +621,8 @@ app.post('/api/farm-manual', (req, res) => {
   }
 });
 
-app.post('/api/steam-guard', (req, res) => {
-  const session = getSession(req);
+app.post('/api/steam-guard', async (req, res) => {
+  const session = await getSession(req);
   const { code } = req.body;
   if (session.steamGuardCallback) {
     session.steamGuardCallback(code);
@@ -602,7 +637,7 @@ app.post('/api/steam-guard', (req, res) => {
 });
 
 app.get('/api/admin/stats', async (req, res) => {
-  const session = getSession(req);
+  const session = await getSession(req);
   const stats = await loadStats();
   if (!session.client.steamID || !stats.users[session.client.steamID.getSteamID64().toString()]?.isAdmin) {
     return res.status(403).json({ error: 'Acesso negado. Apenas o administrador pode ver esta página.' });
@@ -611,7 +646,7 @@ app.get('/api/admin/stats', async (req, res) => {
 });
 
 app.post('/api/admin/update-user', async (req, res) => {
-  const session = getSession(req);
+  const session = await getSession(req);
   const stats = await loadStats();
   if (!session.client.steamID || !stats.users[session.client.steamID.getSteamID64().toString()]?.isAdmin) {
     return res.status(403).json({ error: 'Acesso negado.' });
@@ -624,8 +659,8 @@ app.post('/api/admin/update-user', async (req, res) => {
 });
 
 
-app.post('/api/deactivate', (req, res) => {
-  const session = getSession(req);
+app.post('/api/deactivate', async (req, res) => {
+  const session = await getSession(req);
   if (session.botState.isClientLoggedIn) {
     session.client.logOff();
   }
@@ -637,8 +672,8 @@ app.post('/api/deactivate', (req, res) => {
   res.json({ success: true });
 });
 
-app.post('/api/logout', (req, res) => {
-  const session = getSession(req);
+app.post('/api/logout', async (req, res) => {
+  const session = await getSession(req);
   if (session.botState.isClientLoggedIn) {
     session.client.logOff();
   }
@@ -668,7 +703,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*', async (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
