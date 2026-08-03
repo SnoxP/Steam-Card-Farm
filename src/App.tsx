@@ -152,6 +152,26 @@ const GlobeIcon = () => (
     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
   </svg>
 );
+
+const parseTimeStringToMs = (str: string) => {
+  if (!str || str.trim() === '') return 15 * 60 * 1000;
+  const parts = str.split(':');
+  if (parts.length !== 3) return 15 * 60 * 1000;
+  const h = parseInt(parts[0]) || 0;
+  const m = parseInt(parts[1]) || 0;
+  const s = parseInt(parts[2]) || 0;
+  return (h * 3600 + m * 60 + s) * 1000;
+};
+
+const formatMsToTimeString = (ms: number) => {
+  if (!ms) return '00:15:00';
+  const totalSeconds = Math.floor(ms / 1000);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+};
+
 function AppContent() {
   const [accountName, setAccountName] = useState('');
   const [password, setPassword] = useState('');
