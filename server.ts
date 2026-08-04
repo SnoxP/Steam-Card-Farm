@@ -96,7 +96,7 @@ class SteamBotSession {
         const existingCard = this.botState.collectedCardsDetails.find(c => c.title === card.name);
         if (existingCard && existingCard.minPrice === 'N/A') {
           try {
-            const url = `https://steamcommunity.com/market/priceoverview/?appid=753&currency=1&market_hash_name=${encodeURIComponent(card.market_hash_name)}`;
+            const url = `https://steamcommunity.com/market/priceoverview/?appid=753&currency=7&market_hash_name=${encodeURIComponent(card.market_hash_name)}`;
             const res = await fetch(url, {
               headers: { 'Cookie': (this.community._cookies || []).join('; ') }
             });
