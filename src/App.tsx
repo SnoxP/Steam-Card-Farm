@@ -724,7 +724,7 @@ function AppContent() {
                       {t[lang].collectedCards}
                     </div>
                   </div>
-                  <div className="text-3xl font-mono text-white font-bold z-10">{status?.cardsDropped || 0}</div>
+                  <div className="text-3xl font-mono text-white font-bold z-10">{status?.collectedCardsDetails?.length || status?.cardsDropped || 0}</div>
                   <div className="absolute bottom-0 left-0 w-full h-1 bg-[#22c55e]"></div>
                 </div>
 
@@ -780,7 +780,16 @@ function AppContent() {
                       </div>
                     </div>
                     
-                    <div className="p-6 grid max-md:grid-flow-col max-md:grid-rows-2 max-md:auto-cols-[85%] max-md:overflow-x-auto gap-4 custom-scrollbar-blue max-md:pb-6 md:grid-cols-2">
+                    <div className={`p-6 grid grid-flow-col max-md:auto-cols-[85%] md:auto-cols-[calc(50%-8px)] overflow-x-auto gap-4 custom-scrollbar-blue pb-6 ${((status?.activeAppIds?.length || 0) + (status?.pausedGames?.length || 0)) === 0 ? 'grid-rows-1' : 'grid-rows-2'}`}>
+                      {/* Add New Session Card */}
+                      <div onClick={handleAddNewSession} className="bg-[#0b1016] border border-dashed border-[#1d2630] hover:border-[#22c55e]/50 rounded-lg p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors group">
+                        <div className="w-12 h-12 flex items-center justify-center rounded-full border border-[#22c55e] text-[#22c55e] group-hover:bg-[#22c55e]/10 transition-colors">
+                          <Plus size={24} />
+                        </div>
+                        <div className="text-sm font-bold text-white tracking-wider">ADICIONAR NOVA SESSÃO</div>
+                        <div className="text-xs text-[#8b949e]">Inicie uma nova sessão de farm</div>
+                      </div>
+                      
                       {(status?.activeAppIds?.length > 0 || status?.pausedGames?.length > 0) ? (
                         <>
                         {status?.activeAppIds?.map((id: number) => (
@@ -867,20 +876,7 @@ function AppContent() {
                           </div>
                         ))}
                         </>
-                      ) : (
-                        <div className="col-span-full py-8 text-center text-[#8b949e] text-sm">
-                          {t[lang].noActiveSessions}
-                        </div>
-                      )}
-
-                      {/* Add New Session Card */}
-                      <div onClick={handleAddNewSession} className="bg-[#0b1016] border border-dashed border-[#1d2630] hover:border-[#22c55e]/50 rounded-lg p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors group">
-                        <div className="w-12 h-12 flex items-center justify-center rounded-full border border-[#22c55e] text-[#22c55e] group-hover:bg-[#22c55e]/10 transition-colors">
-                          <Plus size={24} />
-                        </div>
-                        <div className="text-sm font-bold text-white tracking-wider">ADICIONAR NOVA SESSÃO</div>
-                        <div className="text-xs text-[#8b949e]">Inicie uma nova sessão de farm</div>
-                      </div>
+                      ) : null}
                     </div>
                   </div>
 
