@@ -366,6 +366,8 @@ const PORT = 3000;
 
 app.use(express.json());
 
+app.get('/api/health', (req, res) => { res.json({ status: 'ok' }); });
+
 app.get('/api/status', async (req, res) => {
   const session = await getSession(req);
   let isAdmin = false;
